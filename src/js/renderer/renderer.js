@@ -1,3 +1,6 @@
+const inOutPutRadius = 10;
+const inOutPutMargin = 5;
+
 
 function _Renderer() {
 	let HTML = {
@@ -16,41 +19,23 @@ function _Renderer() {
 		this.drawLib.drawBackground();
 
 	
-		this.drawInputs();
-		this.drawOutputs();
+		World.curComponent.draw();
 		// this.drawLib.drawWorldGrid();
 
 		requestAnimationFrame(function () {Renderer.update()});
 	}
 
 
-	const inOutPutRadius = 15;
-	const inOutPutMargin = 10;
 
-	this.drawInputs = function() {
-		let worldMiddle = World.size.value[1] / 2;
-		for (let i = 0; i < World.curComponent.inputs.length; i++)
+	this.drawInOutPutArray = function({position, items, availableHeight, isInputArray = true}) {
+		for (let i = 0; i < items.length; i++)
 		{
-			let y = worldMiddle - (World.curComponent.inputs.length / 2 - i) * (inOutPutRadius * 2 + inOutPutMargin * 2);
+			let y = availableHeight / 2 - (items.length / 2 - i - .5) * (inOutPutRadius * 2 + inOutPutMargin * 2);
 			this.drawInOutPut({
-				position: new Vector(0, y),
-				name: World.curComponent.inputs[i].name,
-				isInput: true,
-				turnedOn: true,
-			});
-		}
-	}
-
-	this.drawOutputs = function() {
-		let worldMiddle = World.size.value[1] / 2;
-		for (let i = 0; i < World.curComponent.outputs.length; i++)
-		{
-			let y = worldMiddle - (World.curComponent.outputs.length / 2 - i) * (inOutPutRadius * 2 + inOutPutMargin * 2);
-			this.drawInOutPut({
-				position: new Vector(World.size.value[0], y),
-				name: World.curComponent.outputs[i].name,
-				isInput: false,
-				turnedOn: true,
+				position: position.copy().add(new Vector(0, y)),
+				name: items[i].name,
+				isInput: isInputArray,
+				turnedOn: items[i].turnedOn,
 			});
 		}
 	}
@@ -71,8 +56,9 @@ function _Renderer() {
 			position: position,
 			radius: inOutPutRadius,
 			fillColor: fillColor,
-			strokeColor: '#ccc'
-		})
+			strokeColor: '#666'
+		});
+		this.drawLib.ctx.lineWidth = 1;
 	}
 }
 

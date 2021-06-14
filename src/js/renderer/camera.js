@@ -33,7 +33,10 @@ function Renderer_Camera() {
     		worldCanvas.height
   		);
   		
-  		maxZoom = World.size.value[1] / this.size.value[1];
+  		let verticalMaxZoom = World.size.value[1] / this.size.value[1];
+  		let horizontalMaxZoom = World.size.value[0] / this.size.value[0];
+  		maxZoom = horizontalMaxZoom > verticalMaxZoom ? horizontalMaxZoom : verticalMaxZoom;
+
   		this.setZoom(this.zoom);
 	}
 }

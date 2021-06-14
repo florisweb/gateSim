@@ -98,7 +98,17 @@ function Renderer_DrawLib({canvas}) {
 
 
 
+	this.drawLine = function({startPosition, endPosition, color}) {
+		let startPos = Renderer.camera.worldPosToCanvPos(startPosition);
+		let endPos = Renderer.camera.worldPosToCanvPos(endPosition);
 
+		ctx.strokeStyle = color;
+		ctx.beginPath();
+		ctx.moveTo(startPos.value[0], startPos.value[1]);
+		ctx.lineTo(endPos.value[0], endPos.value[1]);
+		ctx.closePath();
+		ctx.stroke();
+	}
 
 	this.drawWorldGrid = function() {
 		const gridSize = 50 * Math.ceil(this.camera.zoom);
