@@ -2,9 +2,14 @@
 
 
 let World;
+let Renderer;
+let InputHandler;
 const App = new function() {
 	this.setup = function() {
   		World = new _World();
+  		Renderer = new _Renderer();
+  		InputHandler = new _InputHandler({canvas: worldCanvas});
+
   		World.setup({
   			inputs: [
   				{name: 'input'}
@@ -13,7 +18,8 @@ const App = new function() {
   				{name: 'output'}
   			]
   		});
-  		
+
+  		Renderer.setup();
   	}
 }
 

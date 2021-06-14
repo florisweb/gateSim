@@ -6,12 +6,12 @@ document.onmouseup = function() {
 }
 
 
-function _InputHandler() {
+function _InputHandler({canvas}) {
 	let HTML = {
-		canvas: gameCanvas,
+		canvas: canvas,
 	}
 	this.mouseDown = false;
-	this.draging = false;
+	this.dragging = false;
 
 	this.settings = new function() {
 		this.dragSpeed = 1;
@@ -21,34 +21,31 @@ function _InputHandler() {
 	assignMouseMoveHandler();
 
 
-
-
 	HTML.canvas.addEventListener("click", function(_e) {
-		let mousePosition = new Vector([
+		let mousePosition = new Vector(
 			_e.offsetX / HTML.canvas.offsetWidth * HTML.canvas.width, 
 			_e.offsetY / HTML.canvas.offsetHeight * HTML.canvas.height
-		]);
+		);
 
-		let worldPosition = RenderEngine.camera.canvasPosToWorldPos(mousePosition);
-
+		let worldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
 		
-		if (Builder.buildBody) return Builder.handleClick(worldPosition);
-		handleClickEntity(worldPosition);
+		handleClick(worldPosition);
 	});
 
-	function handleClickEntity(_worldPosition) {
-		for (let i = 0; i < PhysicsEngine.bodies.length; i++) 
-		{
-			let distance = _worldPosition.difference(PhysicsEngine.bodies[i].position).getLength();
-			if (distance > PhysicsEngine.bodies[i].shape.shapeRange) continue;
-			Builder.setBuildBody(PhysicsEngine.bodies[i]);
+	function handleClick(_worldPosition) {
+		console.log('click', _worldPosition.value)
+		// for (let i = 0; i < PhysicsEngine.bodies.length; i++) 
+		// {
+		// 	let distance = _worldPosition.difference(PhysicsEngine.bodies[i].position).getLength();
+		// 	if (distance > PhysicsEngine.bodies[i].shape.shapeRange) continue;
+		// 	Builder.setBuildBody(PhysicsEngine.bodies[i]);
 
-			RenderEngine.camera.follow(PhysicsEngine.bodies[i]);
-			return true;
-		}
+		// 	RenderEngine.camera.follow(PhysicsEngine.bodies[i]);
+		// 	return true;
+		// }
 
-		Builder.buildBody = false;
-		return false;
+		// Builder.buildBody = false;
+		// return false;
 	}
 
 
@@ -56,38 +53,35 @@ function _InputHandler() {
 
 
 	HTML.canvas.addEventListener('wheel', function(event) {
-		let mousePosition = new Vector([
+		let mousePosition = new Vector(
 			event.offsetX / HTML.canvas.offsetWidth * HTML.canvas.width, 
 			event.offsetY / HTML.canvas.offsetHeight * HTML.canvas.height
-		]);
+		);
 
-		let startWorldPosition = RenderEngine.camera.canvasPosToWorldPos(mousePosition);
+		let startWorldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
 
-	    RenderEngine.camera.zoom += event.deltaY * InputHandler.settings.scrollSpeed;
-	    if (RenderEngine.camera.zoom < .1) RenderEngine.camera.zoom = .1;
-	    
+		Renderer.camera.zoom += event.deltaY * InputHandler.settings.scrollSpeed;
+		if (Renderer.camera.zoom < .1) Renderer.camera.zoom = .1;
 
-	    let endWorldPosition = RenderEngine.camera.canvasPosToWorldPos(mousePosition);
-	    RenderEngine.camera.position.add(endWorldPosition.difference(startWorldPosition));
-	    
-	    return false; 
+
+		let endWorldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
+		Renderer.camera.position.add(endWorldPosition.difference(startWorldPosition));
+
+		return false; 
 	}, false);
-
-
 
 
 
 	function assignMouseMoveHandler() {
 		HTML.canvas.addEventListener("mousemove", 
 		    function (_event) {
-		    	let mousePosition = new Vector([
+		    	let mousePosition = new Vector(
 					_event.offsetX / HTML.canvas.offsetWidth * HTML.canvas.width, 
 					_event.offsetY / HTML.canvas.offsetHeight * HTML.canvas.height
-				]);
-	    		let worldPosition = RenderEngine.camera.canvasPosToWorldPos(mousePosition);
+				);
+	    		let worldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
 
-	    		Builder.handleMouseMove(worldPosition);
-		    	Server.sendPacket(0, worldPosition.value);
+	    		// Builder.handleMouseMove(worldPosition);
 		    }
 		);
 	}
@@ -101,95 +95,93 @@ function _InputHandler() {
 
 	function assignMouseDrager() {
 		HTML.canvas.addEventListener("mousedown", 
-	    	function (_event) {
-	      		InputHandler.draging = true;
-	    	}
-	  	);
-
-	  	HTML.canvas.addEventListener("mouseup", stopDraging);
-
-	  	let prevDragVector = false;
-		HTML.canvas.addEventListener("mousemove", 
-		    function (_event) {
-		    	if (!InputHandler.draging) return;
-		    	if (!InputHandler.mouseDown) return stopDraging();
-		    	RenderEngine.camera.follow(false);
-
-		    	if (prevDragVector)
-		    	{
-		    		let deltaPos = new Vector([_event.screenX, _event.screenY]).difference(prevDragVector);
-		    		let moveVector = deltaPos.scale(InputHandler.settings.dragSpeed * RenderEngine.camera.zoom);
-		    		RenderEngine.camera.position.add(moveVector);
-		    	}
-
-		    	prevDragVector = new Vector([_event.screenX, _event.screenY]);
-		    }
+			function (_event) {
+				InputHandler.dragging = true;
+			}
 		);
-		
-		function stopDraging() {
-			InputHandler.draging = false;
-	      	prevDragVector = false;
+
+		HTML.canvas.addEventListener("mouseup", stopDragging);
+
+		let prevDragVector = false;
+		HTML.canvas.addEventListener("mousemove", 
+			function (_event) {
+				if (!InputHandler.dragging) return;
+				if (!InputHandler.mouseDown) return stopDragging();
+
+				if (prevDragVector)
+				{
+					let deltaPos = new Vector(_event.screenX, _event.screenY).difference(prevDragVector);
+					let moveVector = deltaPos.scale(InputHandler.settings.dragSpeed * Renderer.camera.zoom);
+					Renderer.camera.position.add(moveVector);
+				}
+
+				prevDragVector = new Vector(_event.screenX, _event.screenY);
+			}
+		);
+
+		function stopDragging() {
+			InputHandler.dragging = false;
+			prevDragVector = false;
 		}
 	}
-
 }
 
 
 
 
-document.body.addEventListener("keydown", function(_e) {
-	KeyHandler.keys[_e.key] = true;
-	KeyHandler.handleKeys(_e);
-});
+// document.body.addEventListener("keydown", function(_e) {
+// 	KeyHandler.keys[_e.key] = true;
+// 	KeyHandler.handleKeys(_e);
+// });
 
-document.body.addEventListener("keyup", function(_e) {
-	KeyHandler.keys[_e.key] = false;
-});
+// document.body.addEventListener("keyup", function(_e) {
+// 	KeyHandler.keys[_e.key] = false;
+// });
 
-const KeyHandler = new _KeyHandler();
-function _KeyHandler() {
-	this.keys = [];
-	let shortCuts = [
-		{
-			keys: ["Escape"], 
-			event: function () {
-				Builder.cancelBuild();
-			},
-			ignoreIfInInputField: false
-		},
-	];
+// const KeyHandler = new _KeyHandler();
+// function _KeyHandler() {
+// 	this.keys = [];
+// 	let shortCuts = [
+// 		{
+// 			keys: ["Escape"], 
+// 			event: function () {
+// 				Builder.cancelBuild();
+// 			},
+// 			ignoreIfInInputField: false
+// 		},
+// 	];
 
 
-  	this.handleKeys = function(_event) {
-		let inInputField = _event.target.type == "text" || _event.target.type == "textarea" ? true : false;
+//   	this.handleKeys = function(_event) {
+// 		let inInputField = _event.target.type == "text" || _event.target.type == "textarea" ? true : false;
 
-		for (let i = 0; i < shortCuts.length; i++)
-		{
-			let curShortcut = shortCuts[i]; 
-			if (curShortcut.ignoreIfInInputField && inInputField) continue;
+// 		for (let i = 0; i < shortCuts.length; i++)
+// 		{
+// 			let curShortcut = shortCuts[i]; 
+// 			if (curShortcut.ignoreIfInInputField && inInputField) continue;
 
-			let succes = true;
-			for (let i = 0; i < curShortcut.keys.length; i++)
-			{
-				let curKey = curShortcut.keys[i];
-				if (this.keys[curKey]) continue;
-				succes = false;
-				break;
-			}
+// 			let succes = true;
+// 			for (let i = 0; i < curShortcut.keys.length; i++)
+// 			{
+// 				let curKey = curShortcut.keys[i];
+// 				if (this.keys[curKey]) continue;
+// 				succes = false;
+// 				break;
+// 			}
 
-			if (!succes) continue;
+// 			if (!succes) continue;
 
-			_event.target.blur();
+// 			_event.target.blur();
 
-			let status = false;
-			try {status = curShortcut.event(_event);}
-			catch (e) {console.warn(e)};
-			KEYS = {};
-			return true;
-		}
-  	}
+// 			let status = false;
+// 			try {status = curShortcut.event(_event);}
+// 			catch (e) {console.warn(e)};
+// 			KEYS = {};
+// 			return true;
+// 		}
+//   	}
 
-}
+// }
 
 
 

@@ -19,3 +19,13 @@ new LineComponent({
 		- output {id: 'output', index: index},
 		- component: {id: componentId, index: index},
 })
+
+
+
+
+
+
+
+==== Renderer ====
+- Camera
+	- position: in the center of the screen
