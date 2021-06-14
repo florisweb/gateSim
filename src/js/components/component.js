@@ -29,11 +29,20 @@ function LineComponent({id}) {
 
 
 function CurComponent() {
-	BaseComponent.call(this, ...arguments);
+	DrawComponent.call(this, ...arguments);
 }
 
 
-function WorldComponent({position}) {
+
+
+function DrawComponent({position = new Vector(0, 0)}) {
 	BaseComponent.call(this, ...arguments);
 	this.position = position;
+
+	this.draw = function() {
+		
+
+
+	}
+
 }

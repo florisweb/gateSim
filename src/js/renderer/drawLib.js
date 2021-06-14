@@ -39,11 +39,10 @@ function Renderer_DrawLib({canvas}) {
 
 	this.drawText = function({text, position, fontSize, color}) {
 		let canvPos = Renderer.camera.worldPosToCanvPos(position);
-		ctx.fillColor = color;
-
+		ctx.fillStyle = color;
 		ctx.font = (fontSize / Renderer.camera.zoom) + "px Lucida Grande";
-
 		ctx.beginPath();
+
 		ctx.fillText(text, canvPos.value[0], canvPos.value[1]);
 		ctx.closePath();
 		ctx.fill();

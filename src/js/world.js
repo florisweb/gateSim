@@ -22,18 +22,3 @@ function _World() {
     }, 10);
   }
 }
-
-
-window.onresize = function() {
-  worldCanvas.width = worldCanvas.offsetWidth;
-  worldCanvas.height = worldCanvas.offsetHeight;
-  Renderer.camera.size = new Vector(
-    worldCanvas.width,
-    worldCanvas.height
-  );
-}
-
-
-
-
-

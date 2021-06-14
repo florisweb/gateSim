@@ -59,10 +59,7 @@ function _InputHandler({canvas}) {
 		);
 
 		let startWorldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
-
-		Renderer.camera.zoom += event.deltaY * InputHandler.settings.scrollSpeed;
-		if (Renderer.camera.zoom < .1) Renderer.camera.zoom = .1;
-
+		Renderer.camera.setZoom(Renderer.camera.zoom + event.deltaY * InputHandler.settings.scrollSpeed);
 
 		let endWorldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
 		Renderer.camera.position.add(endWorldPosition.difference(startWorldPosition));

@@ -1,8 +1,9 @@
 function Renderer_Camera() {
-	this.size = new Vector(800, 600); // canvas
+	this.size = new Vector(800, 600);
 	
 	this.zoom = 1; // percent of the camsize you can see
 	this.position = World.size.copy(0).scale(.5);
+	let maxZoom = Infinity;
 
 
 	this.getWorldProjectionSize = function() {
@@ -18,7 +19,35 @@ function Renderer_Camera() {
 		let rPos = _position.copy().scale(this.zoom).add(this.getWorldProjectionSize().scale(-.5));
 		return this.position.copy().add(rPos); 
 	}
+
+	this.setZoom = function(_zoom) {
+		this.zoom = _zoom;
+		if (this.zoom < .1) this.zoom = .1;
+		if (this.zoom > maxZoom) this.zoom = maxZoom;
+	}
+
+
+	this.onResize = function() {
+		this.size = new Vector(
+    		worldCanvas.width,
+    		worldCanvas.height
+  		);
+  		
+  		maxZoom = World.size.value[1] / this.size.value[1];
+  		this.setZoom(this.zoom);
+	}
 }
+
+
+
+
+window.onresize = function() {
+  worldCanvas.width = worldCanvas.offsetWidth;
+  worldCanvas.height = worldCanvas.offsetHeight;
+  Renderer.camera.onResize();
+}
+
+
 
 
 

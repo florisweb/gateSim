@@ -15,7 +15,6 @@ function _Renderer() {
 		this.drawLib.clearCanvas();
 		this.drawLib.drawBackground();
 
-		
 	
 		this.drawInputs();
 		this.drawOutputs();
@@ -65,7 +64,6 @@ function _Renderer() {
 			position: position.copy().add(new Vector(inOutPutRadius + 5, 3)),
 			color: '#eee'
 		});
-
 
 
 		this.drawLib.ctx.lineWidth = 3;
