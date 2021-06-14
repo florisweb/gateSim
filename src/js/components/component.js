@@ -29,11 +29,11 @@ function LineComponent({id}) {
 
 
 function CurComponent() {
-	BaseComponent.call(this, arguments);
+	BaseComponent.call(this, ...arguments);
 }
 
 
 function WorldComponent({position}) {
-	BaseComponent.call(this, arguments);
+	BaseComponent.call(this, ...arguments);
 	this.position = position;
 }

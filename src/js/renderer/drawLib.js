@@ -4,7 +4,6 @@ function Renderer_DrawLib({canvas}) {
 	}
 	
 	const ctx = HTML.canvas.getContext("2d");
-	
 	ctx.constructor.prototype.circle = function(x, y, size) {
 		if (size < 0) return;
 		this.ellipse(
@@ -16,7 +15,8 @@ function Renderer_DrawLib({canvas}) {
 			0,
 			2 * Math.PI
 		);
-	}
+	};
+	this.ctx = ctx;
 
 
 	this.clearCanvas = function() {
@@ -37,7 +37,17 @@ function Renderer_DrawLib({canvas}) {
 
 
 
+	this.drawText = function({text, position, fontSize, color}) {
+		let canvPos = Renderer.camera.worldPosToCanvPos(position);
+		ctx.fillColor = color;
 
+		ctx.font = (fontSize / Renderer.camera.zoom) + "px Lucida Grande";
+
+		ctx.beginPath();
+		ctx.fillText(text, canvPos.value[0], canvPos.value[1]);
+		ctx.closePath();
+		ctx.fill();
+	}
 
 
 
@@ -62,6 +72,30 @@ function Renderer_DrawLib({canvas}) {
 		if (fillColor) ctx.fill();
 		if (strokeColor) ctx.stroke();
 	}
+
+	this.drawCircle = function({position, radius, fillColor, strokeColor}) {
+		if (fillColor) ctx.fillStyle = fillColor;
+		if (strokeColor) ctx.strokeStyle = strokeColor;
+
+		let canvPos = Renderer.camera.worldPosToCanvPos(position);
+		let canvRad = radius / Renderer.camera.zoom;
+
+		ctx.beginPath();
+		ctx.ellipse(
+			canvPos.value[0],
+			canvPos.value[1],
+			canvRad,
+			canvRad,
+			0,
+			0,
+			2 * Math.PI
+		);
+		ctx.closePath();
+
+		if (fillColor) ctx.fill();
+		if (strokeColor) ctx.stroke();
+	}
+
 
 
 
@@ -129,25 +163,6 @@ function Renderer_DrawLib({canvas}) {
 	}
 
 
-
-
-	// this.drawCircle = function(_circle, _color = "#f00") {
-	// 	let position = this.camera.worldPosToCanvasPos(_circle.getPosition());
-	// 	let radius = _circle.radius / this.camera.zoom;
-	// 	ctx.strokeStyle = _color;
-	// 	ctx.beginPath();
-	// 	ctx.ellipse(
-	// 		position.value[0],
-	// 		position.value[1],
-	// 		radius,
-	// 		radius,
-	// 		0,
-	// 		0,
-	// 		2 * Math.PI
-	// 	);
-	// 	ctx.closePath();
-	// 	ctx.stroke();
-	// }
 
 	// this.drawBox = function(_box, _color = "#f00") {
 	// 	let points = _box.getPoints();

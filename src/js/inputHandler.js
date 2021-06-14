@@ -33,7 +33,7 @@ function _InputHandler({canvas}) {
 	});
 
 	function handleClick(_worldPosition) {
-		console.log('click', _worldPosition.value)
+		// console.log('click', _worldPosition.value)
 		// for (let i = 0; i < PhysicsEngine.bodies.length; i++) 
 		// {
 		// 	let distance = _worldPosition.difference(PhysicsEngine.bodies[i].position).getLength();

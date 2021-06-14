@@ -4,7 +4,7 @@ function _World() {
 
   this.setup = function(_inputs, _outputs) {
     window.onresize();
-
+    console.log(arguments);
     this.curComponent = new CurComponent({
       name: 'CurComponent', 
       inputs: _inputs, 
