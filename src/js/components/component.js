@@ -1,4 +1,46 @@
 
+function OrGateComponent({position, id}) {
+	Component.call(this, {
+		position: position,
+		name: 'Inverter',
+		id: id,
+		componentId: 'inverter',
+		inputs: [{name: 'input 1'}, {name: 'input 2'}],
+		outputs: [{name: 'output'}],
+		content: []
+	});
+
+	this.addComponent(new LineComponent({
+      from: this.inputs[0],
+      to: this.outputs[0],
+    }));
+    
+    this.addComponent(new LineComponent({
+      from: this.inputs[1],
+      to: this.outputs[0],
+    }));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function BaseComponent({name, id, componentId, inputs = [], outputs = [], content = []}) {
@@ -63,16 +105,22 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 
 
-function InOutput({name}, _parent, _index, _isInput = true) {
+function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 	this.index = _index;
 	this.name = name;
 	this.isInput = _isInput;
-	let Parent = _parent;
+	this.turnedOn = turnedOn;
+	this.parent = _parent;
+	this.lines = [];
 
 	this.getPosition = function() {
-		let items = this.isInput ? Parent.inputs : Parent.outputs;
-		let y = Parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (inOutPutRadius * 2 + inOutPutMargin * 2);
-		return Parent.position.copy().add(new Vector(Parent.size.value[0] * !this.isInput, y));
+		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
+		let y = this.parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (inOutPutRadius * 2 + inOutPutMargin * 2);
+		return this.parent.position.copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
+	}
+
+	this.run = function() {
+		for (let line of this.lines) line.run();
 	}
 }
 
@@ -92,16 +140,22 @@ function LineComponent({id, from, to}) {
 	this.from = from;
 	this.to = to;
 	this.type = 'line';
+	this.from.lines.push(this);
 
 	this.draw = function() {
+		Renderer.drawLib.ctx.lineWidth = 2;
 		Renderer.drawLib.drawLine({
 			startPosition: this.from.getPosition(),
 			endPosition: this.to.getPosition(),
-			color: '#f00'
+			color: this.from.turnedOn ? '#f00' : '#aaa'
 		});
+		Renderer.drawLib.ctx.lineWidth = 1;
 	}
 
-
+	this.run = function() {
+		this.to.turnedOn = this.from.turnedOn;
+		this.to.run();
+	}
 } 
 
 

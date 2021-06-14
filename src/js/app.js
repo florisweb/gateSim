@@ -11,8 +11,8 @@ const App = new function() {
   		InputHandler = new _InputHandler({canvas: worldCanvas});
 
   		World.setup(
-  			[{name: 'input 1'}, {name: 'input 2'}, {name: 'input 3'}], 
-  			[{name: 'output 1'}, {name: 'output 2'}]
+  			[{name: 'input 1', turnedOn: true}, {name: 'input 2'}], 
+  			[{name: 'output 1'}]
   		);
 
   		Renderer.setup();
