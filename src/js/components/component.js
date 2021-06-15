@@ -13,7 +13,7 @@ function NandGateComponent({position, id}) {
 		content: []
 	});
 	
-	let inverter = new InverterComponent({position: position.copy().add(new Vector(10, 10))});
+	let inverter = new InverterComponent({position: new Vector(0, 20)});
   this.addComponent(inverter);
 	this.addComponent(new LineComponent({
    	from: this.inputs[0],
@@ -86,8 +86,10 @@ function InverterComponent({position, id}) {
 
 
 
-function BaseComponent({name, id, componentId, inputs = [], outputs = [], content = []}) {
+function BaseComponent({name, id, componentId, inputs = [], outputs = [], content = []}, _parent) {
 	let This 		= this;
+	this.parent = _parent;
+
 	this.type 		= 'BaseComponent';
 	this.name 		= name;
 	this.id 		= id ? id : newId();
@@ -103,12 +105,19 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 	this.content = content;
 
 	this.addComponent = function(_component) {
+		_component.parent = this;
 		this.content.push(_component);
+	}
+
+	this.getPosition = function() {
+		let parentPos = new Vector(0, 0);
+		if (this.parent) parentPos = this.parent.getPosition();
+		return this.position.copy().add(parentPos);
 	}
 }
 
 
-function Component({position, name, id, componentId, inputs, outputs, content}) {
+function Component({position, name, id, componentId, inputs, outputs, content}, _parent) {
 	BaseComponent.call(this, ...arguments);
 
 	this.type = 'component';
@@ -122,11 +131,10 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 
 
-
-
 	this.fillColor = '#555';
 
 	this.draw = function() {
+		let position = this.getPosition();
 		Renderer.drawLib.drawRect({
 			position: position,
 			diagonal: this.size,
@@ -135,13 +143,13 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 		});
 
 		Renderer.drawInOutPutArray({
-			position: this.position,
+			position: position,
 			items: this.inputs,
 			availableHeight: this.size.value[1],
 			isInputArray: true,
 		});
 		Renderer.drawInOutPutArray({
-			position: this.position.copy().add(new Vector(this.size.value[0], 0)),
+			position: position.copy().add(new Vector(this.size.value[0], 0)),
 			items: this.outputs,
 			availableHeight: this.size.value[1],
 			isInputArray: false,
@@ -164,7 +172,7 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 	this.getPosition = function() {
 		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
 		let y = this.parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (inOutPutRadius * 2 + inOutPutMargin * 2);
-		return this.parent.position.copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
+		return this.parent.getPosition().copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
 	}
 }
 
@@ -324,7 +332,7 @@ function DragComponent() {
 	this.hitBox = this.size.copy();
 
 	this.isPointInside = function(_position) {
-		let delta = this.position.difference(_position);
+		let delta = this.getPosition().difference(_position);
 		if (delta.value[0] > this.hitBox.value[0] || delta.value[0] < 0) return false;
 		if (delta.value[1] > this.hitBox.value[1] || delta.value[1] < 0) return false;
 
@@ -332,6 +340,9 @@ function DragComponent() {
 	}
 
 
+	this.drag = function(_delta) {
+		this.position.add(_delta.copy().scale(-1));
+	}
 
 	Builder.register(this);
 

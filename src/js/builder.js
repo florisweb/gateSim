@@ -52,7 +52,7 @@ function _Builder() {
   this.onDrag = function(_position, _delta) {
     if (!this.dragging || !this.curDragItem) return this.onDragEnd();
 
-    this.curDragItem.position.add(_delta.copy().scale(-1));
+    this.curDragItem.drag(_delta);
   }
   
   this.onDragEnd = function() {
