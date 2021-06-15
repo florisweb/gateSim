@@ -2,50 +2,58 @@
 
 
 
+function NandGateComponent({position, id}) {
+	Component.call(this, {
+		position: position,
+		name: 'Nand gate',
+		id: id,
+		componentId: 'nandgate',
+		inputs: [{name: 'input 1'}, {name: 'input 2'}],
+		outputs: [{name: 'output'}],
+		content: []
+	});
+	
+	let inverter = new InverterComponent({position: position.copy().add(new Vector(10, 10))});
+  this.addComponent(inverter);
+	this.addComponent(new LineComponent({
+   	from: this.inputs[0],
+    to: inverter.inputs[0],
+  }));
+
+	this.addComponent(new LineComponent({
+   	from: this.inputs[1],
+    to: inverter.inputs[0],
+  }));
+
+  this.addComponent(new LineComponent({
+   	from: inverter.outputs[0],
+    to: this.outputs[0],
+  }));
+}
+
 function InverterComponent({position, id}) {
 	Component.call(this, {
 		position: position,
 		name: 'Inverter',
 		id: id,
 		componentId: 'inverter',
-		inputs: [{name: 'input 1'}, {name: 'input 2'}],
+		inputs: [{name: 'input 1'}],
 		outputs: [{name: 'output'}],
 		content: []
 	});
 
-	// this.run = function() {
-	// 	this.outputs[0].turnedOn = !this.inputs[0].turnedOn && !this.inputs[1].turnedOn;
-	// }
-}
 
+	let line = new LineComponent({
+    from: this.inputs[0],
+    to: this.outputs[0],
+  });
 
-
-
-
-
-
-
-
-function OrGateComponent({position, id}) {
-	Component.call(this, {
-		position: position,
-		name: 'Inverter',
-		id: id,
-		componentId: 'inverter',
-		inputs: [{name: 'input 1'}, {name: 'input 2'}],
-		outputs: [{name: 'output'}],
-		content: []
-	});
-
-	this.addComponent(new LineComponent({
-      from: this.inputs[0],
-      to: this.outputs[0],
-    }));
-    
-    this.addComponent(new LineComponent({
-      from: this.inputs[1],
-      to: this.outputs[0],
-    }));
+  line.run = function(_index) {
+		this.turnedOn = !this.from.turnedOn;
+		this.runIndex = _index;
+		this.to.run(_index + 1);
+  }
+  this.addComponent(line);
 }
 
 
@@ -136,19 +144,25 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 
 function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
+	Node.call(this, {turnedOn: turnedOn});
 	this.index = _index;
 	this.name = name;
-	this.isInput = _isInput;
-	this.turnedOn = turnedOn;
+	this.isInput = _isInput;;
 	this.parent = _parent;
-	this.toLines = [];
-	this.fromLines = [];
 
 	this.getPosition = function() {
 		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
 		let y = this.parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (inOutPutRadius * 2 + inOutPutMargin * 2);
 		return this.parent.position.copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
 	}
+}
+
+
+
+function Node({turnedOn}) {
+	this.turnedOn = turnedOn;
+	this.toLines = [];
+	this.fromLines = [];
 
 	this.run = function(_index) {
 		this.turnedOn = false;
@@ -159,10 +173,11 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 			break;
 		}
 		
-		if (debugging) console.log(_index, 'Run ' + (_isInput ? 'input' : 'output')  + ' ' + this.index + " of " + this.parent.name + " status: " + this.turnedOn);
+		if (debugging) console.log(_index, 'Run node status: ' + this.turnedOn);
 		for (let line of this.fromLines) line.run(_index);
 	}
 }
+
 
 
 

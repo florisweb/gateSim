@@ -11,7 +11,7 @@ function _World() {
     });
 
 
-    let orGate = new OrGateComponent({position: new Vector(400, 300), id: 'test'});
+    let orGate = new NandGateComponent({position: new Vector(400, 300), id: 'test'});
     this.curComponent.addComponent(orGate);
 
     this.curComponent.addComponent(new LineComponent({
