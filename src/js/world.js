@@ -3,6 +3,7 @@ window.debugging = false;
 function _World() {
   this.size = new Vector(800, 600);
 
+
   this.setup = function(_inputs, _outputs) {
     window.onresize();
     this.curComponent = new CurComponent({
@@ -11,19 +12,21 @@ function _World() {
     });
 
 
-    let orGate = new NandGateComponent({position: new Vector(400, 300), id: 'test'});
-    this.curComponent.addComponent(orGate);
+    let nandGate = new NandGateComponent({position: new Vector(400, 300), id: 'test'});
+
+
+    this.curComponent.addComponent(nandGate);
 
     this.curComponent.addComponent(new LineComponent({
       from: this.curComponent.inputs[0],
-      to: orGate.inputs[0],
+      to: nandGate.inputs[0],
     }));
     this.curComponent.addComponent(new LineComponent({
       from: this.curComponent.inputs[1],
-      to: orGate.inputs[1],
+      to: nandGate.inputs[1],
     }));
     this.curComponent.addComponent(new LineComponent({
-      from: orGate.outputs[0],
+      from: nandGate.outputs[0],
       to: this.curComponent.outputs[0],
     }));
     
@@ -75,6 +78,7 @@ function _World() {
     this.update();
   }
 
+
   this.run = function() {
     for (let input of this.curComponent.inputs)
     {
@@ -84,6 +88,7 @@ function _World() {
 
   this.update = function() {
     this.run();
+    Builder.update();
 
     setTimeout(function () {
       World.update();

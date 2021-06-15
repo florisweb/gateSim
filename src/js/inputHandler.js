@@ -28,26 +28,8 @@ function _InputHandler({canvas}) {
 		);
 
 		let worldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
-		
-		handleClick(worldPosition);
+		Builder.clickHandler(worldPosition);
 	});
-
-	function handleClick(_worldPosition) {
-		// console.log('click', _worldPosition.value)
-		// for (let i = 0; i < PhysicsEngine.bodies.length; i++) 
-		// {
-		// 	let distance = _worldPosition.difference(PhysicsEngine.bodies[i].position).getLength();
-		// 	if (distance > PhysicsEngine.bodies[i].shape.shapeRange) continue;
-		// 	Builder.setBuildBody(PhysicsEngine.bodies[i]);
-
-		// 	RenderEngine.camera.follow(PhysicsEngine.bodies[i]);
-		// 	return true;
-		// }
-
-		// Builder.buildBody = false;
-		// return false;
-	}
-
 
 
 

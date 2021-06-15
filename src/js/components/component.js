@@ -81,6 +81,11 @@ function InverterComponent({position, id}) {
 
 
 
+
+
+
+
+
 function BaseComponent({name, id, componentId, inputs = [], outputs = [], content = []}) {
 	let This 		= this;
 	this.type 		= 'BaseComponent';
@@ -105,12 +110,18 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 
 function Component({position, name, id, componentId, inputs, outputs, content}) {
 	BaseComponent.call(this, ...arguments);
+
 	this.type = 'component';
 	this.position = position;
 
 	this.size = new Vector(0, 0);
 	let maxPorts = this.inputs.length > this.outputs.length ? this.inputs.length : this.outputs.length;
-	this.size = new Vector(100, maxPorts * 40)
+	this.size = new Vector(100, maxPorts * 40);
+
+	BuildComponent.call(this);
+
+
+
 
 
 	this.fillColor = '#555';
@@ -119,8 +130,8 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 		Renderer.drawLib.drawRect({
 			position: position,
 			diagonal: this.size,
-			fillColor: this.fillColor,
-			strokeColor: '#444'
+			fillColor: this.selected ? '#557' : this.fillColor,
+			strokeColor: this.selected ? '#33f' : '#444'
 		});
 
 		Renderer.drawInOutPutArray({
@@ -195,8 +206,6 @@ function WorldInput({name, turnedOn}, _parent, _index,) {
 	this.setStatus = function(_status) {
 		activationLine.turnedOn = _status;
 	}
-
-
 }
 
 
@@ -281,6 +290,52 @@ function CurComponent({inputs, outputs}) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function BuildComponent() {
+	DragComponent.call(this);
+	this.selected = false;
+
+	this.onclick = function() {
+		this.selected = true;
+	}
+
+
+}
+
+
+
+
+
+function DragComponent() {
+	this.hitBox = this.size.copy();
+
+	this.isPointInside = function(_position) {
+		let delta = this.position.difference(_position);
+		if (delta.value[0] > this.hitBox.value[0] || delta.value[0] < 0) return false;
+		if (delta.value[1] > this.hitBox.value[1] || delta.value[1] < 0) return false;
+
+		return true;
+	}
+
+
+
+	Builder.register(this);
+
+}
 
 
 
