@@ -1,3 +1,4 @@
+window.debugging = false;
 
 function _World() {
   this.size = new Vector(800, 600);
@@ -74,12 +75,15 @@ function _World() {
     this.update();
   }
 
-  this.update = function() {
+  this.run = function() {
     for (let input of this.curComponent.inputs)
     {
-      for (let line of input.lines) line.run();
+      input.run(0);
     }
-   
+  }
+
+  this.update = function() {
+    this.run();
 
     setTimeout(function () {
       World.update();

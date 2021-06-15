@@ -1,4 +1,31 @@
 
+
+
+
+function InverterComponent({position, id}) {
+	Component.call(this, {
+		position: position,
+		name: 'Inverter',
+		id: id,
+		componentId: 'inverter',
+		inputs: [{name: 'input 1'}, {name: 'input 2'}],
+		outputs: [{name: 'output'}],
+		content: []
+	});
+
+	// this.run = function() {
+	// 	this.outputs[0].turnedOn = !this.inputs[0].turnedOn && !this.inputs[1].turnedOn;
+	// }
+}
+
+
+
+
+
+
+
+
+
 function OrGateComponent({position, id}) {
 	Component.call(this, {
 		position: position,
@@ -20,6 +47,9 @@ function OrGateComponent({position, id}) {
       to: this.outputs[0],
     }));
 }
+
+
+
 
 
 
@@ -111,7 +141,8 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 	this.isInput = _isInput;
 	this.turnedOn = turnedOn;
 	this.parent = _parent;
-	this.lines = [];
+	this.toLines = [];
+	this.fromLines = [];
 
 	this.getPosition = function() {
 		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
@@ -119,9 +150,38 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 		return this.parent.position.copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
 	}
 
-	this.run = function() {
-		for (let line of this.lines) line.run();
+	this.run = function(_index) {
+		this.turnedOn = false;
+		for (let line of this.toLines)
+		{
+			if (!line.turnedOn) continue;
+			this.turnedOn = true;
+			break;
+		}
+		
+		if (debugging) console.log(_index, 'Run ' + (_isInput ? 'input' : 'output')  + ' ' + this.index + " of " + this.parent.name + " status: " + this.turnedOn);
+		for (let line of this.fromLines) line.run(_index);
 	}
+}
+
+
+
+function WorldInput({name, turnedOn}, _parent, _index,) {
+	InOutput.call(this, {name, turnedOn}, _parent, _index, true);
+
+	let activationLine = new LineComponent({
+      from: false,
+      to: this,
+    })
+
+	this.toLines.push();
+
+
+	this.setStatus = function(_status) {
+		activationLine.turnedOn = _status;
+	}
+
+
 }
 
 
@@ -132,15 +192,19 @@ function LineComponent({id, from, to}) {
 	BaseComponent.call(this, {
 		id: id,
 		name: 'line',
-		inputs: [{name: 'in'}],
-		outputs: [{name: 'out'}],
+		inputs: [],
+		outputs: [],
 		content: [],
 	});
+	RunComponent.call(this, {
+		from: from,
+		to: to
+	});
 
-	this.from = from;
-	this.to = to;
+
 	this.type = 'line';
-	this.from.lines.push(this);
+	if (this.from) this.from.fromLines.push(this);
+	if (this.to) this.to.toLines.push(this);
 
 	this.draw = function() {
 		Renderer.drawLib.ctx.lineWidth = 2;
@@ -151,18 +215,39 @@ function LineComponent({id, from, to}) {
 		});
 		Renderer.drawLib.ctx.lineWidth = 1;
 	}
-
-	this.run = function() {
-		this.to.turnedOn = this.from.turnedOn;
-		this.to.run();
-	}
 } 
+
+
+
+
+function RunComponent({from, to}) {
+	this.from = from;
+	this.to = to;
+	this.runIndex = -1;
+
+	this.turnedOn = false;
+
+	this.run = function(_index) {
+		this.turnedOn = this.from.turnedOn;
+		if (debugging) console.log('Run line from ' + this.from.parent.name + " to " + this.to.parent.name, _index);
+		this.runIndex = _index;
+		this.to.run(_index + 1);
+	}
+}
+
+
+
+
+
+
+
 
 
 
 
 
 function CurComponent({inputs, outputs}) {
+	let This = this;
 	Component.call(this, { 
 		position: new Vector(0, 0), 
 		name: 'CurComponent', 
@@ -173,6 +258,15 @@ function CurComponent({inputs, outputs}) {
 		content: [],
 	});
 	this.size = World.size;
+	this.inputs = inputs.map(function (item, i) {
+		return new WorldInput(item, This, i);
+	});
 
 	this.fillColor = 'rgba(0, 0, 0, 0)';
 }
+
+
+
+
+
+
