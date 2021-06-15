@@ -28,6 +28,8 @@ function _Builder() {
     let clickedItem = false;
     for (let item of Builder.list)
     {
+      if (item.getDepth() > Renderer.maxRenderDepth) continue;
+
       let clicked = item.isPointInside(_position);
       if (!clicked) continue;
 

@@ -6,6 +6,7 @@ function _Renderer() {
 	let HTML = {
 		canvas: worldCanvas,
 	}
+	this.maxRenderDepth = 1;
 
 	this.camera = new Renderer_Camera();
 	this.drawLib = new Renderer_DrawLib({canvas: HTML.canvas});

@@ -114,6 +114,10 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 		if (this.parent) parentPos = this.parent.getPosition();
 		return this.position.copy().add(parentPos);
 	}
+	this.getDepth = function() {
+		if (!this.parent) return 0;
+		return this.parent.getDepth() + 1;
+	}
 }
 
 
@@ -134,6 +138,8 @@ function Component({position, name, id, componentId, inputs, outputs, content}, 
 	this.fillColor = '#555';
 
 	this.draw = function() {
+		if (this.getDepth() > Renderer.maxRenderDepth) return;
+
 		let position = this.getPosition();
 		Renderer.drawLib.drawRect({
 			position: position,
@@ -239,6 +245,9 @@ function LineComponent({id, from, to}) {
 	if (this.to) this.to.toLines.push(this);
 
 	this.draw = function() {
+		let highestDepth = this.to.parent.getDepth() > this.from.parent.getDepth() ? this.to.parent.getDepth() : this.from.parent.getDepth();
+		if (highestDepth > Renderer.maxRenderDepth) return;
+
 		Renderer.drawLib.ctx.lineWidth = 2;
 		Renderer.drawLib.drawLine({
 			startPosition: this.from.getPosition(),
@@ -343,9 +352,7 @@ function DragComponent() {
 	this.drag = function(_delta) {
 		this.position.add(_delta.copy().scale(-1));
 	}
-
 	Builder.register(this);
-
 }
 
 
