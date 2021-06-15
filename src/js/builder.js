@@ -2,6 +2,8 @@
 
 function _Builder() {
   this.list = [];
+  this.dragging = false;
+  this.curDragItem = false;
 
 
   this.setup = function() {
@@ -14,15 +16,19 @@ function _Builder() {
 
 
   this.clickHandler = function(_position) {
-    console.log('click', _position);
+    for (let item of this.list) item.selected = false;
+    let clickedItem = getItemByPosition(_position);
+    if (!clickedItem) return;
+    clickedItem.onclick();
+  }
 
 
+  function getItemByPosition(_position) {
     let minSize = Infinity;
     let clickedItem = false;
-    for (let item of this.list)
+    for (let item of Builder.list)
     {
       let clicked = item.isPointInside(_position);
-      item.selected = false;
       if (!clicked) continue;
 
       let size = item.hitBox.value[0] * item.hitBox.value[1];
@@ -32,12 +38,38 @@ function _Builder() {
       clickedItem = item;
     }
 
-    if (!clickedItem) return;
-    
-    clickedItem.onclick();
-    console.warn('clicked', clickedItem);
+    return clickedItem;
   }
 
+
+  this.onDragStart = function(_position) {
+    let item = getItemByPosition(_position);
+    if (!item) return;
+    this.curDragItem = item;
+    this.dragging = true;
+  }
+
+  this.onDrag = function(_position, _delta) {
+    if (!this.dragging || !this.curDragItem) return this.onDragEnd();
+
+    this.curDragItem.position.add(_delta.copy().scale(-1));
+  }
+  
+  this.onDragEnd = function() {
+    this.curDragItem = false;
+    this.dragging = false;
+  }
+
+
+
+
+
+
+
+
+  this.handleMouseMove = function(_position) {
+
+  }
 
 
 

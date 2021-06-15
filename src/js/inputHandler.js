@@ -17,8 +17,8 @@ function _InputHandler({canvas}) {
 		this.dragSpeed = 1;
 		this.scrollSpeed = .005
 	}
-	assignMouseDrager();
-	assignMouseMoveHandler();
+	assignMouseDragger();
+	// assignMouseMoveHandler();
 
 
 	HTML.canvas.addEventListener("click", function(_e) {
@@ -51,31 +51,26 @@ function _InputHandler({canvas}) {
 
 
 
-	function assignMouseMoveHandler() {
-		HTML.canvas.addEventListener("mousemove", 
-		    function (_event) {
-		    	let mousePosition = new Vector(
-					_event.offsetX / HTML.canvas.offsetWidth * HTML.canvas.width, 
-					_event.offsetY / HTML.canvas.offsetHeight * HTML.canvas.height
-				);
-	    		let worldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
-
-	    		// Builder.handleMouseMove(worldPosition);
-		    }
-		);
-	}
+	// function assignMouseMoveHandler() {
+	// 	HTML.canvas.addEventListener("mousemove", 
+	// 	  function (_event) {
+	// 	  	let worldPosition = eventToWorldPos(_event);
+	//     	Builder.handleMouseMove(worldPosition);
+	// 	  }
+	// 	);
+	// }
 
 
 
 
 
 
-
-
-	function assignMouseDrager() {
+	function assignMouseDragger() {
 		HTML.canvas.addEventListener("mousedown", 
 			function (_event) {
 				InputHandler.dragging = true;
+				let worldPosition = eventToWorldPos(_event);
+				Builder.onDragStart(worldPosition);
 			}
 		);
 
@@ -91,7 +86,9 @@ function _InputHandler({canvas}) {
 				{
 					let deltaPos = new Vector(_event.screenX, _event.screenY).difference(prevDragVector);
 					let moveVector = deltaPos.scale(InputHandler.settings.dragSpeed * Renderer.camera.zoom);
-					Renderer.camera.position.add(moveVector);
+					let worldPosition = eventToWorldPos(_event);
+					
+					dragHandler(worldPosition, moveVector);
 				}
 
 				prevDragVector = new Vector(_event.screenX, _event.screenY);
@@ -99,10 +96,33 @@ function _InputHandler({canvas}) {
 		);
 
 		function stopDragging() {
+			Builder.onDragEnd();
 			InputHandler.dragging = false;
 			prevDragVector = false;
 		}
+
+
+		function dragHandler(_position, _delta) {
+			if (Builder.dragging) return Builder.onDrag(_position, _delta);
+			Renderer.camera.position.add(_delta);
+		}
 	}
+
+
+
+
+
+
+
+	function eventToWorldPos(_e) {
+		let mousePosition = new Vector(
+			_e.offsetX / HTML.canvas.offsetWidth * HTML.canvas.width, 
+			_e.offsetY / HTML.canvas.offsetHeight * HTML.canvas.height
+		);
+  	return Renderer.camera.canvPosToWorldPos(mousePosition);
+	}
+
+
 }
 
 
