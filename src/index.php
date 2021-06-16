@@ -16,20 +16,20 @@
       				nandGate.addInverter();
       				World.curComponent.addComponent(nandGate);
       			'>
-					<div class='title text'>Nand Gate</div>
-					<img class='icon optionIcon' src='images/icons/optionIcon.png'>
+					<div class='titleHolder text'>Nand Gate</div>
+					<img class='icon optionIcon clickable' src='images/icons/optionIcon.png'>
 					<canvas class='componentPreview'></canvas>
 				</div>
 
 				<div class='component' onclick='World.curComponent.addComponent(ComponentManager.importComponent(ComponentManager.components[1]))'>
-					<div class='title text'>And Gate</div>
-					<img class='icon optionIcon' src='images/icons/optionIcon.png'>
+					<div class='titleHolder text'>And Gate</div>
+					<img class='icon optionIcon clickable' src='images/icons/optionIcon.png'>
 					<canvas class='componentPreview'></canvas>
 				</div>
 
 				<div class='component' onclick='World.curComponent.addComponent(ComponentManager.importComponent(ComponentManager.components[0]))'>
-					<div class='title text'>Or Gate</div>
-					<img class='icon optionIcon' src='images/icons/optionIcon.png'>
+					<div class='titleHolder text'>Or Gate</div>
+					<img class='icon optionIcon clickable' src='images/icons/optionIcon.png'>
 					<canvas class='componentPreview'></canvas>
 				</div>
 			</div>

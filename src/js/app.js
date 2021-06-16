@@ -6,13 +6,17 @@ let Renderer;
 let InputHandler;
 let Builder;
 let ComponentManager;
+let SideBar;
+
 const App = new function() {
 	this.setup = function() {
-		ComponentManager = new _ComponentManager();
-  		World = new _World();
-  		Renderer = new _Renderer();
-  		InputHandler = new _InputHandler({canvas: worldCanvas});
-  		Builder = new _Builder();
+		Builder 			= new _Builder();
+		ComponentManager 	= new _ComponentManager();
+		SideBar 			= new _SideBar();
+
+  		World 				= new _World();
+  		Renderer 			= new _Renderer();
+  		InputHandler 		= new _InputHandler({canvas: worldCanvas});
 
   		World.setup(
   			[{name: 'input 1', turnedOn: true}, {name: 'input 2'}], 
@@ -20,6 +24,7 @@ const App = new function() {
   		);
 
   		Renderer.setup();
+  		SideBar.setup();
   	}
 }
 

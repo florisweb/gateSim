@@ -373,7 +373,6 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 	this.export = function() {
 		let item = {
 			name: this.name,
-			turnedOn: this.turnedOn
 		}
 		return item;
 	}

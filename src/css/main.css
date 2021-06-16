@@ -100,7 +100,26 @@ html, body {
     width:  100%;
     height: 50px;
     border:  1px solid red;
+}
+#componentHolder .component .titleHolder {
+    position: relative;
+    float:  left;
+    width:  calc(100% - 32px);
+    height: 20px;
 
+    padding:  5px 0;
+    color: #eee;
+}
+
+#componentHolder .component .optionIcon {
+    position: relative;
+    float:  right;
+    right:  0;
+    top:  0;
+
+    width: auto;
+    height: 20px;
+    padding:  5px 10px;
 }
 
 
