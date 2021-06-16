@@ -114,6 +114,16 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 	}
 
 	this.remove = function() {
+		for (let node of this.inputs) 
+		{
+			for (let line of node.toLines) line.remove();
+		}
+		for (let node of this.outputs) 
+		{
+			for (let line of node.fromLines) line.remove();
+		}
+
+
 		for (let i = 0; i < this.parent.content.length; i++)
 		{
 			if (this.parent.content[i].id != this.id) continue;
@@ -188,7 +198,7 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 	Node.call(this, {turnedOn: turnedOn});
 	this.index = _index;
 	this.name = name;
-	this.isInput = _isInput;;
+	this.isInput = _isInput;
 	this.parent = _parent;
 
 	this.getPosition = function() {
@@ -252,6 +262,20 @@ function LineComponent({id, from, to}) {
 		if (this.to) this.to.toLines.push(this);
 	}
 
+	this.remove = function() {
+		console.log('removeLine', this.id, this.from.parent.name + ' -> ' + this.to.parent.name, this.to.toLines);
+		for (let i = 0; i < this.to.toLines.length; i++)
+		{
+			if (this.to.toLines[i].id != this.id) continue;
+			this.to.toLines.splice(i, 1);
+		}
+		for (let i = 0; i < this.from.fromLines.length; i++)
+		{
+			if (this.from.fromLines[i].id != this.id) continue;
+			this.from.fromLines.splice(i, 1);
+		}
+	}
+
 	this.draw = function() {
 		let highestDepth = this.to.parent.getDepth() > this.from.parent.getDepth() ? this.to.parent.getDepth() : this.from.parent.getDepth();
 		if (highestDepth > Renderer.maxRenderDepth) return;
@@ -303,8 +327,9 @@ function RunComponent({from, to}) {
 
 
 
-function WorldInput({name, turnedOn}, _parent, _index,) {
+function WorldInput({name, turnedOn}, _parent, _index) {
 	InOutput.call(this, {name, turnedOn}, _parent, _index, true);
+	this.isWorldInput = true;
 
 	let activationLine = new LineComponent({
       from: false,
@@ -317,6 +342,11 @@ function WorldInput({name, turnedOn}, _parent, _index,) {
 	this.setStatus = function(_status) {
 		activationLine.turnedOn = _status;
 	}
+}
+
+function WorldOutput({name, turnedOn}, _parent, _index) {
+	InOutput.call(this, {name, turnedOn}, _parent, _index, false);
+	this.isWorldInput = true;
 }
 
 
@@ -334,6 +364,9 @@ function CurComponent({inputs, outputs}) {
 	this.size = World.size;
 	this.inputs = inputs.map(function (item, i) {
 		return new WorldInput(item, This, i);
+	});
+	this.outputs = outputs.map(function (item, i) {
+		return new WorldOutput(item, This, i);
 	});
 
 	this.fillColor = 'rgba(0, 0, 0, 0)';

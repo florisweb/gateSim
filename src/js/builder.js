@@ -35,8 +35,13 @@ function _Builder() {
     let clickedNode = getInOutputByPosition(_position);
     if (clickedNode) 
     {
+      console.warn('clicked node', clickedNode.isWorldInput, clickedNode.isInput);
       if (this.curBuildLine)
       {
+        if (clickedNode.isWorldInput && clickedNode.isInput) return console.log(1);
+        if (!clickedNode.isWorldInput && !clickedNode.isInput) return console.log(2);
+
+        console.log(3);
         if (this.curBuildLine.from.id == clickedNode.id) return this.cancelBuildingLine();
         this.curBuildLine.to = clickedNode;
         World.curComponent.addComponent(this.curBuildLine);
@@ -44,12 +49,14 @@ function _Builder() {
         return;
       }
 
+      if (clickedNode.isWorldInput && !clickedNode.isInput) return;
+      if (!clickedNode.isWorldInput && clickedNode.isInput) return;
+
       this.curBuildLine = new LineComponent({
         from: clickedNode,
         to: mouseNode,
       });
 
-      console.warn('clicked node', clickedNode);
       return;
     } 
 
