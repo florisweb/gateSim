@@ -134,6 +134,9 @@ function _InputHandler({canvas}) {
 
 
 
+
+
+
 window.addEventListener("keydown", function(_e) {
 	KeyHandler.keys[_e.key] = true;
 	KeyHandler.handleKeys(_e);

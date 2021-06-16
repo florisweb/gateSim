@@ -114,13 +114,16 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 	}
 
 	this.remove = function() {
+		for (let item of this.content) item.remove();
+		Builder.unregister(this.id);
+
 		for (let node of this.inputs) 
 		{
-			for (let line of node.toLines) line.remove();
+			for (let i = node.toLines.length - 1; i >= 0; i--) node.toLines[i].remove();
 		}
 		for (let node of this.outputs) 
 		{
-			for (let line of node.fromLines) line.remove();
+			for (let i = node.fromLines.length - 1; i >= 0; i--) node.fromLines[i].remove();
 		}
 
 
@@ -230,6 +233,7 @@ function Node({turnedOn}) {
 	}
 
 
+	this.onclick = function() {};
 
 	this.isPointInside = function(_position) {
 		let delta = this.getPosition().difference(_position);
@@ -263,7 +267,12 @@ function LineComponent({id, from, to}) {
 	}
 
 	this.remove = function() {
-		console.log('removeLine', this.id, this.from.parent.name + ' -> ' + this.to.parent.name, this.to.toLines);
+		for (let i = 0; i < this.parent.content.length; i++)
+		{
+			if (this.parent.content[i].id != this.id) continue;
+			this.parent.content.splice(i, 1);
+		}
+		
 		for (let i = 0; i < this.to.toLines.length; i++)
 		{
 			if (this.to.toLines[i].id != this.id) continue;
@@ -341,6 +350,9 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 
 	this.setStatus = function(_status) {
 		activationLine.turnedOn = _status;
+	}
+	this.onclick = function() {
+		this.setStatus(!activationLine.turnedOn);
 	}
 }
 

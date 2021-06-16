@@ -35,14 +35,13 @@ function _Builder() {
     let clickedNode = getInOutputByPosition(_position);
     if (clickedNode) 
     {
-      console.warn('clicked node', clickedNode.isWorldInput, clickedNode.isInput);
+      clickedNode.onclick();
       if (this.curBuildLine)
       {
-        if (clickedNode.isWorldInput && clickedNode.isInput) return console.log(1);
-        if (!clickedNode.isWorldInput && !clickedNode.isInput) return console.log(2);
-
-        console.log(3);
         if (this.curBuildLine.from.id == clickedNode.id) return this.cancelBuildingLine();
+        if (clickedNode.isWorldInput && clickedNode.isInput) return;
+        if (!clickedNode.isWorldInput && !clickedNode.isInput) return;
+
         this.curBuildLine.to = clickedNode;
         World.curComponent.addComponent(this.curBuildLine);
         this.curBuildLine = false;
@@ -139,7 +138,6 @@ function _Builder() {
 
   this.handleMouseMove = function(_position) {
     mousePosition = _position;
-
   }
 
 
@@ -148,6 +146,17 @@ function _Builder() {
 
   this.register = function(_component) {
     this.list.push(_component);
+  }
+
+  this.unregister = function(_id) {
+    for (let i = 0; i < this.list.length; i++)
+    {
+      if (this.list[i].id != _id) continue;
+
+      this.list.splice(i, 1);
+      return true;
+    }
+    return false;
   }
 
 
