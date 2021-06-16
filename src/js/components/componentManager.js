@@ -13,29 +13,27 @@ function _ComponentManager() {
 		}
 
 
-		let content = [];
-		let lines = [];
-		for (let componentData of _data.content)
-		{
-			let component = false;
-			if (componentData.type == 'line')
-			{
-				lines.push(componentData);
-				continue;
-			}
-
-			content.push(this.importComponent(componentData));
-		}
-
 		let component = new componentConstructor({
 			id: 				_data.id,
 			name: 				_data.name,
 			componentId: 		_data.componentId,
 			position: 			new Vector(..._data.position),
 			inputs:  			_data.inputs,
-			outputs:  			_data.outputs,
-			content: 			content
+			outputs:  			_data.outputs
 		});
+
+		let lines = [];
+		for (let componentData of _data.content)
+		{
+			if (componentData.type == 'line')
+			{
+				lines.push(componentData);
+				continue;
+			}
+
+			component.addComponent(this.importComponent(componentData));
+		}
+
 
 		for (let lineData of lines)
 		{

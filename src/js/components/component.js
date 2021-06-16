@@ -3,40 +3,40 @@ function NandGateComponent({position, id}) {
 	Component.call(this, {
 		position: position,
 		name: 'Nand gate',
-		id: 'nandgatecomp',//id,
+		id: id,
 		componentId: 'nandgate',
 		inputs: [{name: 'input 1'}, {name: 'input 2'}],
 		outputs: [{name: 'output'}],
-		content: []
 	});
 	
-	let inverter = new InverterComponent({position: new Vector(0, 20)});
-  this.addComponent(inverter);
-	this.addComponent(new LineComponent({
-   	from: this.inputs[0],
-    to: inverter.inputs[0],
-  }));
+	this.addInverter = function() {
+		let inverter = new InverterComponent({position: new Vector(0, 20)});
+	  this.addComponent(inverter);
+		this.addComponent(new LineComponent({
+	   	from: this.inputs[0],
+	    to: inverter.inputs[0],
+	  }));
 
-	this.addComponent(new LineComponent({
-   	from: this.inputs[1],
-    to: inverter.inputs[0],
-  }));
+		this.addComponent(new LineComponent({
+	   	from: this.inputs[1],
+	    to: inverter.inputs[0],
+	  }));
 
-  this.addComponent(new LineComponent({
-   	from: inverter.outputs[0],
-    to: this.outputs[0],
-  }));
+	  this.addComponent(new LineComponent({
+	   	from: inverter.outputs[0],
+	    to: this.outputs[0],
+	  }));
+	}
 }
 
 function InverterComponent({position, id}) {
 	Component.call(this, {
 		position: position,
 		name: 'Inverter',
-		id: 'invertercomp',// id,
+		id: id,
 		componentId: 'inverter',
 		inputs: [{name: 'input 1'}],
 		outputs: [{name: 'output'}],
-		content: []
 	});
 
 
@@ -51,6 +51,8 @@ function InverterComponent({position, id}) {
 		this.to.run(_index + 1);
   }
   this.addComponent(line);
+
+  this.addComponent = function() {};
 }
 
 
@@ -83,9 +85,8 @@ function InverterComponent({position, id}) {
 
 
 
-function BaseComponent({name, id, componentId, inputs = [], outputs = [], content = []}, _parent) {
+function BaseComponent({name, id, componentId, inputs = [], outputs = []}) {
 	let This 					= this;
-	this.parent 			= _parent;
 	this.id 					= id ? id : newId();
 
 	this.type 				= 'BaseComponent';
@@ -100,7 +101,7 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 		return new InOutput(item, This, i, false);
 	});
 
-	this.content = content;
+	this.content = [];
 
 	this.activate = function() {};
 
@@ -160,7 +161,7 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 
 
 
-function Component({position, name, id, componentId, inputs, outputs, content}, _parent) {
+function Component({position, name, id, componentId, inputs, outputs, content}) {
 	BaseComponent.call(this, ...arguments);
 
 	this.type = 'component';
@@ -230,7 +231,6 @@ function LineComponent({from, to}) {
 		name: 'line',
 		inputs: [],
 		outputs: [],
-		content: [],
 	});
 	this.type = 'line';
 
@@ -421,7 +421,7 @@ function WorldOutput({name, turnedOn}, _parent, _index) {
 }
 
 
-function CurComponent({inputs, outputs, content = []}) {
+function CurComponent({inputs, outputs}) {
 	let This = this;
 	Component.call(this, { 
 		position: 		new Vector(0, 0), 
@@ -430,9 +430,8 @@ function CurComponent({inputs, outputs, content = []}) {
 		componentId: 	'worldComponent', 
 		inputs: 			inputs, 
 		outputs: 			outputs, 
-		content: 			content,
 	});
-	
+
 	this.size = World.size;
 	this.inputs = inputs.map(function (item, i) {
 		return new WorldInput(item, This, i);
