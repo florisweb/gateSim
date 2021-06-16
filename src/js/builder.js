@@ -61,13 +61,7 @@ function _Builder() {
 
     let clickedItem = getItemByPosition(_position);
     this.curSelectedItem = false;
-    if (!clickedItem) 
-    {
-      let nandGate = new NandGateComponent({position: mousePosition.copy()});
-      nandGate.addInverter();
-      World.curComponent.addComponent(nandGate);
-      return;
-    }
+    if (!clickedItem) return;
     this.curSelectedItem = clickedItem;
     clickedItem.onclick();
   }
