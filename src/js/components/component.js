@@ -283,6 +283,8 @@ function LineComponent({id, from, to}) {
 			if (this.from.fromLines[i].id != this.id) continue;
 			this.from.fromLines.splice(i, 1);
 		}
+
+		this.to.run();
 	}
 
 	this.draw = function() {
