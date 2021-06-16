@@ -45,12 +45,12 @@ function _Renderer() {
 
 	this.drawInOutPut = function({position, name, turnedOn = false, isInput = true}) {
 		let fillColor = turnedOn ? "#f00" : "#888";
-		this.drawLib.drawText({
-			text: name,
-			fontSize: 13,
-			position: position.copy().add(new Vector(nodeRadius + 5, 3)),
-			color: '#eee'
-		});
+		// this.drawLib.drawText({
+		// 	text: name,
+		// 	fontSize: 13,
+		// 	position: position.copy().add(new Vector(nodeRadius + 5, 3)),
+		// 	color: '#eee'
+		// });
 
 
 		this.drawLib.ctx.lineWidth = 3;

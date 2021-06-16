@@ -36,16 +36,42 @@ function Renderer_DrawLib({canvas}) {
 
 
 
+	this.drawCenteredText = function({text, position, fontSize, color}) {
+		let size = this.getTextBoundingBox({text: text, fontSize: fontSize});
+
+		let newPosition = position.copy().add(size.copy().scale(-.5));
+		this.drawText({
+			text: text,
+			position: newPosition,
+			fontSize: fontSize,
+			color: color
+		});
+		this.drawRect({
+			position: newPosition,
+			diagonal: size,
+			strokeColor: "#0f0",
+		})
+	}	
+
 
 	this.drawText = function({text, position, fontSize, color}) {
 		let canvPos = Renderer.camera.worldPosToCanvPos(position);
 		ctx.fillStyle = color;
-		ctx.font = (fontSize / Renderer.camera.zoom) + "px Lucida Grande";
+		ctx.font = (fontSize / Renderer.camera.zoom) + "px Georgia";
 		ctx.beginPath();
 
 		ctx.fillText(text, canvPos.value[0], canvPos.value[1]);
 		ctx.closePath();
-		ctx.fill();
+		ctx.fill();		
+	}
+
+	this.getTextBoundingBox = function({text, fontSize}) {
+		ctx.font = (fontSize / Renderer.camera.zoom) + "px Georgia";
+		let size = ctx.measureText(text);
+		return new Vector(
+			size.width, 
+			size.actualBoundingBoxAscent + size.actualBoundingBoxDescent
+		).scale(Renderer.camera.zoom);
 	}
 
 

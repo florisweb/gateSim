@@ -201,6 +201,13 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 			isInputArray: false,
 		});
 
+		Renderer.drawLib.drawCenteredText({
+			text: this.name,
+			position: this.getPosition().copy().add(this.size.copy().scale(.5)),
+			fontSize: 15,
+			color: '#fff'
+		})
+
 
 		for (let component of this.content) component.draw();
 	}
@@ -280,8 +287,9 @@ function LineComponent({from, to}) {
 
 
 	this.draw = function() {
-		let highestDepth = this.to.parent.getDepth() > this.from.parent.getDepth() ? this.to.parent.getDepth() : this.from.parent.getDepth();
-		if (highestDepth > Renderer.maxRenderDepth) return;
+		// let highestDepth = this.to.parent.getDepth() > this.from.parent.getDepth() ? this.to.parent.getDepth() : this.from.parent.getDepth();
+		
+		if (this.parent.getDepth() + 1 > Renderer.maxRenderDepth) return;
 
 		Renderer.drawLib.ctx.lineWidth = 2;
 		Renderer.drawLib.drawLine({
@@ -425,11 +433,11 @@ function CurComponent({inputs, outputs}) {
 	let This = this;
 	Component.call(this, { 
 		position: 		new Vector(0, 0), 
-		name: 				'CurComponent', 
-		id: 					newId(),
+		name: 			'', 
+		id: 			newId(),
 		componentId: 	'worldComponent', 
-		inputs: 			inputs, 
-		outputs: 			outputs, 
+		inputs: 		inputs, 
+		outputs: 		outputs, 
 	});
 
 	this.size = World.size;
