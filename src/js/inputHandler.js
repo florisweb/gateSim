@@ -21,15 +21,6 @@ function _InputHandler({canvas}) {
 	assignMouseMoveHandler();
 
 
-	HTML.canvas.addEventListener("click", function(_e) {
-		let mousePosition = new Vector(
-			_e.offsetX / HTML.canvas.offsetWidth * HTML.canvas.width, 
-			_e.offsetY / HTML.canvas.offsetHeight * HTML.canvas.height
-		);
-
-		let worldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
-		Builder.clickHandler(worldPosition);
-	});
 
 
 
@@ -66,21 +57,37 @@ function _InputHandler({canvas}) {
 
 
 	function assignMouseDragger() {
-		HTML.canvas.addEventListener("mousedown", 
+		let dragStartTime = new Date();
+		const minDragTimeToStart = 100;
+
+		window.addEventListener("mousedown", 
 			function (_event) {
-				InputHandler.dragging = true;
+				dragStartTime = new Date();
 				let worldPosition = eventToWorldPos(_event);
 				Builder.onDragStart(worldPosition);
 			}
 		);
 
-		HTML.canvas.addEventListener("mouseup", stopDragging);
+		HTML.canvas.addEventListener("mouseup", function(_e) {
+			if (InputHandler.dragging) return stopDragging();
+
+			let mousePosition = new Vector(
+				_e.offsetX / HTML.canvas.offsetWidth * HTML.canvas.width, 
+				_e.offsetY / HTML.canvas.offsetHeight * HTML.canvas.height
+			);
+
+			let worldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
+			Builder.clickHandler(worldPosition);
+		});
+
 
 		let prevDragVector = false;
 		HTML.canvas.addEventListener("mousemove", 
 			function (_event) {
-				if (!InputHandler.dragging) return;
+				if (new Date() - dragStartTime < minDragTimeToStart && !InputHandler.dragging) return;
 				if (!InputHandler.mouseDown) return stopDragging();
+				startDragging = false;
+				InputHandler.dragging = true;
 
 				if (prevDragVector)
 				{
@@ -99,6 +106,7 @@ function _InputHandler({canvas}) {
 			Builder.onDragEnd();
 			InputHandler.dragging = false;
 			prevDragVector = false;
+			startDragging = false;
 		}
 
 
@@ -121,66 +129,74 @@ function _InputHandler({canvas}) {
 		);
   	return Renderer.camera.canvPosToWorldPos(mousePosition);
 	}
-
-
 }
 
 
 
 
-// document.body.addEventListener("keydown", function(_e) {
-// 	KeyHandler.keys[_e.key] = true;
-// 	KeyHandler.handleKeys(_e);
-// });
+window.addEventListener("keydown", function(_e) {
+	KeyHandler.keys[_e.key] = true;
+	KeyHandler.handleKeys(_e);
+});
 
-// document.body.addEventListener("keyup", function(_e) {
-// 	KeyHandler.keys[_e.key] = false;
-// });
+window.addEventListener("keyup", function(_e) {
+	KeyHandler.keys[_e.key] = false;
+});
 
-// const KeyHandler = new _KeyHandler();
-// function _KeyHandler() {
-// 	this.keys = [];
-// 	let shortCuts = [
-// 		{
-// 			keys: ["Escape"], 
-// 			event: function () {
-// 				Builder.cancelBuild();
-// 			},
-// 			ignoreIfInInputField: false
-// 		},
-// 	];
+const KeyHandler = new _KeyHandler();
+function _KeyHandler() {
+	this.keys = [];
+	let shortCuts = [
+		{
+			keys: ["Escape"], 
+			event: function () {
+				Builder.cancelBuildingLine();
+			},
+			ignoreIfInInputField: false
+		},
+		{
+			keys: ["Backspace"], 
+			event: function () {
+				if (!Builder.curSelectedItem) return;
+				Builder.curSelectedItem.remove();
+				Builder.curSelectedItem = false;
+			},
+			ignoreIfInInputField: true
+		},
+	];
 
 
-//   	this.handleKeys = function(_event) {
-// 		let inInputField = _event.target.type == "text" || _event.target.type == "textarea" ? true : false;
+  this.handleKeys = function(_event) {
+		let inInputField = _event.target.type == "text" || _event.target.type == "textarea" ? true : false;
+		console.log(_event.key);
 
-// 		for (let i = 0; i < shortCuts.length; i++)
-// 		{
-// 			let curShortcut = shortCuts[i]; 
-// 			if (curShortcut.ignoreIfInInputField && inInputField) continue;
+		for (let i = 0; i < shortCuts.length; i++)
+		{
+			let curShortcut = shortCuts[i]; 
+			if (curShortcut.ignoreIfInInputField && inInputField) continue;
 
-// 			let succes = true;
-// 			for (let i = 0; i < curShortcut.keys.length; i++)
-// 			{
-// 				let curKey = curShortcut.keys[i];
-// 				if (this.keys[curKey]) continue;
-// 				succes = false;
-// 				break;
-// 			}
+			let succes = true;
+			for (let i = 0; i < curShortcut.keys.length; i++)
+			{
+				let curKey = curShortcut.keys[i];
+				if (this.keys[curKey]) continue;
+				succes = false;
+				break;
+			}
 
-// 			if (!succes) continue;
+			if (!succes) continue;
 
-// 			_event.target.blur();
+			_event.target.blur();
 
-// 			let status = false;
-// 			try {status = curShortcut.event(_event);}
-// 			catch (e) {console.warn(e)};
-// 			KEYS = {};
-// 			return true;
-// 		}
-//   	}
+			let status = false;
+			try {status = curShortcut.event(_event);}
+			catch (e) {console.warn(e)};
+			KEYS = {};
+			return true;
+		}
+  	}
 
-// }
+}
 
 
 

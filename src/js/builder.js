@@ -5,6 +5,7 @@ function _Builder() {
   this.dragging = false;
   this.curDragItem = false;
   this.curBuildLine = false;
+  this.curSelectedItem = false;
 
   let mousePosition = new Vector(0, 0);
   let mouseNode = {
@@ -53,7 +54,14 @@ function _Builder() {
     } 
 
     let clickedItem = getItemByPosition(_position);
-    if (!clickedItem) return;
+    this.curSelectedItem = false;
+    if (!clickedItem) 
+    {
+      let nandGate = new NandGateComponent({position: mousePosition.copy()});
+      World.curComponent.addComponent(nandGate);
+      return;
+    }
+    this.curSelectedItem = clickedItem;
     clickedItem.onclick();
   }
 

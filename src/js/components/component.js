@@ -87,13 +87,13 @@ function InverterComponent({position, id}) {
 
 
 function BaseComponent({name, id, componentId, inputs = [], outputs = [], content = []}, _parent) {
-	let This 		= this;
-	this.parent = _parent;
+	let This 					= this;
+	this.parent 			= _parent;
 
-	this.type 		= 'BaseComponent';
-	this.name 		= name;
-	this.id 		= id ? id : newId();
-	this.componentId = componentId;
+	this.type 				= 'BaseComponent';
+	this.name 				= name;
+	this.id 					= id ? id : newId();
+	this.componentId 	= componentId;
 
 
 	this.inputs = inputs.map(function (item, i) {
@@ -102,6 +102,7 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 	this.outputs = outputs.map(function (item, i) {
 		return new InOutput(item, This, i, false);
 	});
+
 	this.content = content;
 
 	this.activate = function() {};
@@ -112,11 +113,21 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 		this.content.push(_component);
 	}
 
+	this.remove = function() {
+		for (let i = 0; i < this.parent.content.length; i++)
+		{
+			if (this.parent.content[i].id != this.id) continue;
+			this.parent.content.splice(i, 1);
+		}
+	}
+
+
 	this.getPosition = function() {
 		let parentPos = new Vector(0, 0);
 		if (this.parent) parentPos = this.parent.getPosition();
 		return this.position.copy().add(parentPos);
 	}
+
 	this.getDepth = function() {
 		if (!this.parent) return 0;
 		return this.parent.getDepth() + 1;
