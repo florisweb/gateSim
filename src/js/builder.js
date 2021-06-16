@@ -64,6 +64,7 @@ function _Builder() {
     if (!clickedItem) 
     {
       let nandGate = new NandGateComponent({position: mousePosition.copy()});
+      nandGate.addInverter();
       World.curComponent.addComponent(nandGate);
       return;
     }

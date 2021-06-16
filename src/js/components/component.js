@@ -426,7 +426,7 @@ function CurComponent({inputs, outputs}) {
 	Component.call(this, { 
 		position: 		new Vector(0, 0), 
 		name: 				'CurComponent', 
-		id: 					'worldComponent',
+		id: 					newId(),
 		componentId: 	'worldComponent', 
 		inputs: 			inputs, 
 		outputs: 			outputs, 
