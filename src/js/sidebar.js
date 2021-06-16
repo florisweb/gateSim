@@ -33,8 +33,9 @@ function _SideBar_componentList() {
                           "<canvas class='componentPreview'></canvas>";
     
     setTextToElement(element.children[0], _component.name);
-    element.addEventListener('click', function() {
-        World.curComponent.addComponent(ComponentManager.importComponent(_component));
+    element.addEventListener('click', function(_e) {
+      if (_e.target.classList.contains('optionIcon')) return World.import(_component);
+      World.curComponent.addComponent(ComponentManager.importComponent(_component));
     });
 
     HTML.componentHolder.append(element);

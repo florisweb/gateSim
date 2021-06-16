@@ -4,20 +4,30 @@ function _World() {
   this.size = new Vector(800, 600);
 
 
-  this.setup = function(_inputs, _outputs) {
+  this.setup = function() {
     window.onresize();
-    this.curComponent = new CurComponent({
-      inputs: _inputs, 
-      outputs: _outputs, 
-    });
+    this.clear();
 
     this.update();
+  }
+
+  this.clear = function(inputCount = 2, outputCount = 2) {
+    let inputs = [];
+    let outputs = [];
+    for (let i = 0; i < inputCount; i++) inputs.push({name: 'input ' + i});
+    for (let i = 0; i < outputCount; i++) outputs.push({name: 'output ' + i});
+
+    Builder.list = [];
+    this.curComponent = new CurComponent({
+      inputs: inputs, 
+      outputs: outputs, 
+    });
   }
 
 
   this.import = function(_data) {
     Builder.list = [];
-    let component = ComponentManager.importComponent(_data);
+    let component = ComponentManager.importComponent(_data, true);
     this.curComponent = component;
   }
 

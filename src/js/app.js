@@ -18,10 +18,7 @@ const App = new function() {
   		Renderer 			= new _Renderer();
   		InputHandler 		= new _InputHandler({canvas: worldCanvas});
 
-  		World.setup(
-  			[{name: 'input 1'}, {name: 'input 2'}], 
-  			[{name: 'output 1'}, {name: 'output 2'}]
-  		);
+  		World.setup();
 
   		Renderer.setup();
   		SideBar.setup();

@@ -428,12 +428,12 @@ function WorldOutput({name, turnedOn}, _parent, _index) {
 }
 
 
-function CurComponent({inputs, outputs}) {
+function CurComponent({inputs, outputs, id}) {
 	let This = this;
 	Component.call(this, { 
 		position: 		new Vector(0, 0), 
 		name: 			'', 
-		id: 			newId(),
+		id: 			id,
 		componentId: 	'worldComponent', 
 		inputs: 		inputs, 
 		outputs: 		outputs, 

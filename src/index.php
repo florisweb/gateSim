@@ -9,7 +9,7 @@
 	</head>	
 	<body>		
 		<div id='sideBar'>
-
+			<div class='button bDefault bBoxy text' onclick='World.clear()'>New Component</div>
 			<div id='componentHolder'>
 				<div class='component' onclick=' 
 					nandGate = new NandGateComponent({position: new Vector(0, 0)});

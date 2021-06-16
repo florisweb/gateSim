@@ -15,7 +15,7 @@ function _ComponentManager() {
 		SideBar.componentList.setComponentList(this.components)
 	}
 
-	this.importComponent = function(_data, _isRoot = true) {
+	this.importComponent = function(_data, _isWorldComponent = false, _isRoot = true) {
 
 		let componentConstructor = Component;
 		switch (_data.componentId)
@@ -24,6 +24,7 @@ function _ComponentManager() {
 			case 'inverter': 		componentConstructor = InverterComponent; break;
 			case 'worldComponent': 	componentConstructor = CurComponent; break;
 		}
+		if (_isWorldComponent) componentConstructor = CurComponent;
 
 
 		let component = new componentConstructor({
@@ -44,7 +45,7 @@ function _ComponentManager() {
 				continue;
 			}
 
-			component.addComponent(this.importComponent(componentData, false));
+			component.addComponent(this.importComponent(componentData, false, false));
 		}
 
 
