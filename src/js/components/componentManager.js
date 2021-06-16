@@ -5,7 +5,7 @@ function _ComponentManager() {
 	nandGate.addInverter();
 	this.components = [
 		JSON.parse("{\"position\":[0,0],\"name\":\"Or Gate\",\"id\":2163675280867424,\"componentId\":8669924151900503,\"inputs\":[{\"name\":\"input 1\",\"turnedOn\":true},{\"name\":\"input 2\",\"turnedOn\":true}],\"outputs\":[{\"name\":\"output 1\",\"turnedOn\":true}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":2163675280867424,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":2163675280867424,\"index\":0,\"isInput\":false}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":2163675280867424,\"index\":1,\"isInput\":true},\"to\":{\"parentId\":2163675280867424,\"index\":0,\"isInput\":false}}]}"),
-		JSON.parse("{\"position\":[0,0],\"name\":\"And Gate\",\"id\":1716337678792325,\"componentId\":4353403633738826,\"inputs\":[{\"name\":\"input 1\",\"turnedOn\":false},{\"name\":\"input 2\",\"turnedOn\":false}],\"outputs\":[{\"name\":\"output 1\",\"turnedOn\":false}],\"content\":[{\"position\":[265.03315290933693,271.52841677943167],\"name\":\"Nand gate\",\"id\":1295166692822345,\"componentId\":\"nandgate\",\"inputs\":[{\"name\":\"input 1\",\"turnedOn\":false},{\"name\":\"input 2\",\"turnedOn\":false}],\"outputs\":[{\"name\":\"output\",\"turnedOn\":true}],\"content\":[{\"position\":[0,20],\"name\":\"Inverter\",\"id\":3070228760152597,\"componentId\":\"inverter\",\"inputs\":[{\"name\":\"input 1\",\"turnedOn\":false}],\"outputs\":[{\"name\":\"output\",\"turnedOn\":true}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3070228760152597,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":3070228760152597,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":1295166692822345,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":3070228760152597,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":1295166692822345,\"index\":1,\"isInput\":true},\"to\":{\"parentId\":3070228760152597,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3070228760152597,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":1295166692822345,\"index\":0,\"isInput\":false}}]},{\"position\":[482.62449255750994,263.95060893098776],\"name\":\"Nand gate\",\"id\":4887709692163252,\"componentId\":\"nandgate\",\"inputs\":[{\"name\":\"input 1\",\"turnedOn\":true},{\"name\":\"input 2\"}],\"outputs\":[{\"name\":\"output\",\"turnedOn\":false}],\"content\":[{\"position\":[0,20],\"name\":\"Inverter\",\"id\":2693866143938544,\"componentId\":\"inverter\",\"inputs\":[{\"name\":\"input 1\",\"turnedOn\":true}],\"outputs\":[{\"name\":\"output\",\"turnedOn\":false}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":2693866143938544,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":2693866143938544,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":4887709692163252,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":2693866143938544,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":4887709692163252,\"index\":1,\"isInput\":true},\"to\":{\"parentId\":2693866143938544,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":2693866143938544,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":4887709692163252,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":1716337678792325,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":1295166692822345,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":1295166692822345,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":4887709692163252,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":4887709692163252,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":1716337678792325,\"index\":0,\"isInput\":false}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":1716337678792325,\"index\":1,\"isInput\":true},\"to\":{\"parentId\":1295166692822345,\"index\":1,\"isInput\":true}}]}"),
+		JSON.parse("{\"position\":[0,0],\"name\":\"And Gate\",\"id\":3053905272404609,\"componentId\":7620753948389335,\"inputs\":[{\"name\":\"input 1\"},{\"name\":\"input 2\"}],\"outputs\":[{\"name\":\"output 1\"}],\"content\":[{\"position\":[110.18867924528305,252.83018867924528],\"name\":\"Inverter\",\"id\":5486295181917157,\"componentId\":\"inverter\",\"inputs\":[{\"name\":\"input 1\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3053905272404609,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":true}},{\"position\":[106.41509433962267,299.6226415094339],\"name\":\"Inverter\",\"id\":5486295181917157,\"componentId\":\"inverter\",\"inputs\":[{\"name\":\"input 1\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3053905272404609,\"index\":1,\"isInput\":true},\"to\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":true}},{\"position\":[365.2830188679242,263.3962264150943],\"name\":\"Nand gate\",\"id\":3455827883671711,\"componentId\":\"nandgate\",\"inputs\":[{\"name\":\"input 1\"},{\"name\":\"input 2\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[{\"position\":[160.7547169811321,170.18867924528303],\"name\":\"Inverter\",\"id\":6072984542857026,\"componentId\":\"inverter\",\"inputs\":[{\"name\":\"input 1\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3455827883671711,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3455827883671711,\"index\":1,\"isInput\":true},\"to\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":3455827883671711,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":3455827883671711,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":3455827883671711,\"index\":1,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3455827883671711,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":3053905272404609,\"index\":0,\"isInput\":false}}]}"),
 		nandGate.export(),
 		(new InverterComponent({position: new Vector(0, 0)})).export(),
 	];
@@ -15,7 +15,7 @@ function _ComponentManager() {
 		SideBar.componentList.setComponentList(this.components)
 	}
 
-	this.importComponent = function(_data) {
+	this.importComponent = function(_data, _isRoot = true) {
 
 		let componentConstructor = Component;
 		switch (_data.componentId)
@@ -44,7 +44,7 @@ function _ComponentManager() {
 				continue;
 			}
 
-			component.addComponent(this.importComponent(componentData));
+			component.addComponent(this.importComponent(componentData, false));
 		}
 
 
@@ -54,7 +54,18 @@ function _ComponentManager() {
 			component.addComponent(line);
 		}
 
+		if (_isRoot) return setNewIds(component);
 		return component;
+	}
+
+	function setNewIds(_masterComponent) {
+		_masterComponent.id = newId();
+		for (let component of _masterComponent.content)
+		{
+			if (component.type == 'line') continue;
+			setNewIds(component);
+		}
+		return _masterComponent;
 	}
 
 
