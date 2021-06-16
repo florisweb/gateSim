@@ -23,6 +23,11 @@ function _Builder() {
   }
 
 
+  this.cancelBuildingLine = function() {
+    this.curBuildLine = false;
+  }
+
+
 
   this.clickHandler = function(_position) {
     for (let item of this.list) item.selected = false;
@@ -31,6 +36,7 @@ function _Builder() {
     {
       if (this.curBuildLine)
       {
+        if (this.curBuildLine.from.id == clickedNode.id) return this.cancelBuildingLine();
         this.curBuildLine.to = clickedNode;
         World.curComponent.addComponent(this.curBuildLine);
         this.curBuildLine = false;

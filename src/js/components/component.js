@@ -190,9 +190,10 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 
 
 function Node({turnedOn}) {
-	this.turnedOn = turnedOn;
-	this.toLines = [];
-	this.fromLines = [];
+	this.id 				= Symbol();
+	this.turnedOn 	= turnedOn;
+	this.toLines 		= [];
+	this.fromLines 	= [];
 
 	this.run = function(_index) {
 		this.turnedOn = false;
