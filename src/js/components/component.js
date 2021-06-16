@@ -104,8 +104,11 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 	});
 	this.content = content;
 
+	this.activate = function() {};
+
 	this.addComponent = function(_component) {
 		_component.parent = this;
+		_component.activate();
 		this.content.push(_component);
 	}
 
@@ -119,6 +122,8 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 		return this.parent.getDepth() + 1;
 	}
 }
+
+
 
 
 function Component({position, name, id, componentId, inputs, outputs, content}, _parent) {
@@ -177,7 +182,7 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 
 	this.getPosition = function() {
 		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
-		let y = this.parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (inOutPutRadius * 2 + inOutPutMargin * 2);
+		let y = this.parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (nodeRadius * 2 + inOutPutMargin * 2);
 		return this.parent.getPosition().copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
 	}
 }
@@ -201,27 +206,15 @@ function Node({turnedOn}) {
 		if (debugging) console.log(_index, 'Run node status: ' + this.turnedOn);
 		for (let line of this.fromLines) line.run(_index);
 	}
-}
 
 
 
-
-function WorldInput({name, turnedOn}, _parent, _index,) {
-	InOutput.call(this, {name, turnedOn}, _parent, _index, true);
-
-	let activationLine = new LineComponent({
-      from: false,
-      to: this,
-    })
-
-	this.toLines.push();
-
-
-	this.setStatus = function(_status) {
-		activationLine.turnedOn = _status;
+	this.isPointInside = function(_position) {
+		let delta = this.getPosition().difference(_position);
+		let distance = delta.getSquaredLength();
+		return distance < Math.pow(nodeRadius, 2);
 	}
 }
-
 
 
 
@@ -241,8 +234,11 @@ function LineComponent({id, from, to}) {
 
 
 	this.type = 'line';
-	if (this.from) this.from.fromLines.push(this);
-	if (this.to) this.to.toLines.push(this);
+
+	this.activate = function() {
+		if (this.from) this.from.fromLines.push(this);
+		if (this.to) this.to.toLines.push(this);
+	}
 
 	this.draw = function() {
 		let highestDepth = this.to.parent.getDepth() > this.from.parent.getDepth() ? this.to.parent.getDepth() : this.from.parent.getDepth();
@@ -287,6 +283,31 @@ function RunComponent({from, to}) {
 
 
 
+
+
+
+
+
+
+
+
+function WorldInput({name, turnedOn}, _parent, _index,) {
+	InOutput.call(this, {name, turnedOn}, _parent, _index, true);
+
+	let activationLine = new LineComponent({
+      from: false,
+      to: this,
+    })
+
+	this.toLines.push(activationLine);
+
+
+	this.setStatus = function(_status) {
+		activationLine.turnedOn = _status;
+	}
+}
+
+
 function CurComponent({inputs, outputs}) {
 	let This = this;
 	Component.call(this, { 
@@ -329,15 +350,18 @@ function BuildComponent() {
 	this.onclick = function() {
 		this.selected = true;
 	}
-
-
 }
 
 
 
 
 
+
+
+
 function DragComponent() {
+	this.draggable = true;
+
 	this.hitBox = this.size.copy();
 
 	this.isPointInside = function(_position) {

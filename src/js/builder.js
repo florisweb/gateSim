@@ -4,19 +4,48 @@ function _Builder() {
   this.list = [];
   this.dragging = false;
   this.curDragItem = false;
+  this.curBuildLine = false;
 
-
-  this.setup = function() {
-   
-    this.update();
+  let mousePosition = new Vector(0, 0);
+  let mouseNode = {
+    getPosition: function() {
+      return mousePosition;
+    },
+    parent: {
+      getDepth: function() {
+        return 0;
+      }
+    }
   }
 
 
+  this.setup = function() {
+  }
 
 
 
   this.clickHandler = function(_position) {
     for (let item of this.list) item.selected = false;
+    let clickedNode = getInOutputByPosition(_position);
+    if (clickedNode) 
+    {
+      if (this.curBuildLine)
+      {
+        this.curBuildLine.to = clickedNode;
+        World.curComponent.addComponent(this.curBuildLine);
+        this.curBuildLine = false;
+        return;
+      }
+
+      this.curBuildLine = new LineComponent({
+        from: clickedNode,
+        to: mouseNode,
+      });
+
+      console.warn('clicked node', clickedNode);
+      return;
+    } 
+
     let clickedItem = getItemByPosition(_position);
     if (!clickedItem) return;
     clickedItem.onclick();
@@ -44,9 +73,27 @@ function _Builder() {
   }
 
 
+  function getInOutputByPosition(_position) {
+    let clickedItem = false;
+    for (let item of Builder.list)
+    {
+      if (item.getDepth() > Renderer.maxRenderDepth) continue;
+      let nodes = [...item.inputs, ...item.outputs];
+      for (let node of nodes)
+      {
+        if (!node.isPointInside(_position)) continue;
+        return node;
+      }
+    }
+
+    return false;
+  }
+
+
+
   this.onDragStart = function(_position) {
     let item = getItemByPosition(_position);
-    if (!item) return;
+    if (!item || !item.draggable) return;
     this.curDragItem = item;
     this.dragging = true;
   }
@@ -70,6 +117,7 @@ function _Builder() {
 
 
   this.handleMouseMove = function(_position) {
+    mousePosition = _position;
 
   }
 

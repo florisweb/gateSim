@@ -1,4 +1,4 @@
-const inOutPutRadius = 10;
+const nodeRadius = 10;
 const inOutPutMargin = 5;
 
 
@@ -21,6 +21,7 @@ function _Renderer() {
 
 	
 		World.curComponent.draw();
+		if (Builder.curBuildLine) Builder.curBuildLine.draw();
 		// this.drawLib.drawWorldGrid();
 
 		requestAnimationFrame(function () {Renderer.update()});
@@ -31,7 +32,7 @@ function _Renderer() {
 	this.drawInOutPutArray = function({position, items, availableHeight, isInputArray = true}) {
 		for (let i = 0; i < items.length; i++)
 		{
-			let y = availableHeight / 2 - (items.length / 2 - i - .5) * (inOutPutRadius * 2 + inOutPutMargin * 2);
+			let y = availableHeight / 2 - (items.length / 2 - i - .5) * (nodeRadius * 2 + inOutPutMargin * 2);
 			this.drawInOutPut({
 				position: position.copy().add(new Vector(0, y)),
 				name: items[i].name,
@@ -47,7 +48,7 @@ function _Renderer() {
 		this.drawLib.drawText({
 			text: name,
 			fontSize: 13,
-			position: position.copy().add(new Vector(inOutPutRadius + 5, 3)),
+			position: position.copy().add(new Vector(nodeRadius + 5, 3)),
 			color: '#eee'
 		});
 
@@ -55,7 +56,7 @@ function _Renderer() {
 		this.drawLib.ctx.lineWidth = 3;
 		this.drawLib.drawCircle({
 			position: position,
-			radius: inOutPutRadius,
+			radius: nodeRadius,
 			fillColor: fillColor,
 			strokeColor: '#666'
 		});

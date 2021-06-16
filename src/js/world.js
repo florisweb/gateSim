@@ -17,20 +17,19 @@ function _World() {
 
     this.curComponent.addComponent(nandGate);
 
-    this.curComponent.addComponent(new LineComponent({
-      from: this.curComponent.inputs[0],
-      to: nandGate.inputs[0],
-    }));
-    this.curComponent.addComponent(new LineComponent({
-      from: this.curComponent.inputs[1],
-      to: nandGate.inputs[1],
-    }));
-    this.curComponent.addComponent(new LineComponent({
-      from: nandGate.outputs[0],
-      to: this.curComponent.outputs[0],
-    }));
-    
-    
+    // this.curComponent.addComponent(new LineComponent({
+    //   from: this.curComponent.inputs[0],
+    //   to: nandGate.inputs[0],
+    // }));
+    // this.curComponent.addComponent(new LineComponent({
+    //   from: this.curComponent.inputs[1],
+    //   to: nandGate.inputs[1],
+    // }));
+    // this.curComponent.addComponent(new LineComponent({
+    //   from: nandGate.outputs[0],
+    //   to: this.curComponent.outputs[0],
+    // }));
+
 
 
     // let newComponent = new Component({

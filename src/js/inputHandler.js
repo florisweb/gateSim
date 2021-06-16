@@ -18,7 +18,7 @@ function _InputHandler({canvas}) {
 		this.scrollSpeed = .005
 	}
 	assignMouseDragger();
-	// assignMouseMoveHandler();
+	assignMouseMoveHandler();
 
 
 	HTML.canvas.addEventListener("click", function(_e) {
@@ -51,14 +51,14 @@ function _InputHandler({canvas}) {
 
 
 
-	// function assignMouseMoveHandler() {
-	// 	HTML.canvas.addEventListener("mousemove", 
-	// 	  function (_event) {
-	// 	  	let worldPosition = eventToWorldPos(_event);
-	//     	Builder.handleMouseMove(worldPosition);
-	// 	  }
-	// 	);
-	// }
+	function assignMouseMoveHandler() {
+		HTML.canvas.addEventListener("mousemove", 
+		  function (_event) {
+		  	let worldPosition = eventToWorldPos(_event);
+	    	Builder.handleMouseMove(worldPosition);
+		  }
+		);
+	}
 
 
 

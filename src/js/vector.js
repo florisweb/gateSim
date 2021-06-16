@@ -49,9 +49,12 @@ function Vector(_x, _y) {
 		return this;
 	}
 
-
+	this.getSquaredLength = function() {
+		return this.dotProduct(this)
+	}
+	
 	this.getLength = function() {
-		return Math.sqrt(this.dotProduct(this));
+		return Math.sqrt(this.getSquaredLength());
 	}
 	
 	this.setLength = function(_length) {
