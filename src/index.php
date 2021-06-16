@@ -21,13 +21,13 @@
 					<canvas class='componentPreview'></canvas>
 				</div>
 
-				<div class='component' onclick='World.curComponent.addComponent(ComponentManager.importComponent(andGateData))'>
+				<div class='component' onclick='World.curComponent.addComponent(ComponentManager.importComponent(ComponentManager.components[1]))'>
 					<div class='title text'>And Gate</div>
 					<img class='icon optionIcon' src='images/icons/optionIcon.png'>
 					<canvas class='componentPreview'></canvas>
 				</div>
-				
-				<div class='component' onclick='World.curComponent.addComponent(ComponentManager.importComponent(orGateData))'>
+
+				<div class='component' onclick='World.curComponent.addComponent(ComponentManager.importComponent(ComponentManager.components[0]))'>
 					<div class='title text'>Or Gate</div>
 					<img class='icon optionIcon' src='images/icons/optionIcon.png'>
 					<canvas class='componentPreview'></canvas>
@@ -38,7 +38,7 @@
 		<div id='mainContent'>
 			<div class='header'>
 				<input class='inputHolder text titleHolder' placeholder="Component name">
-				<div class='button bDefault bBoxy packageButton'>Package</div>
+				<div class='button bDefault bBoxy packageButton' onclick='Builder.packageComponent()'>Package</div>
 			</div>
 			<canvas id="worldCanvas" width="800" height="600"></canvas>
 		</div>

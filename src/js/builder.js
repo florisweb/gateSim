@@ -1,6 +1,9 @@
 
 
 function _Builder() {
+  let HTML = {
+    nameHolder: $("#mainContent input.titleHolder")[0]
+  }
   this.list = [];
   this.dragging = false;
   this.curDragItem = false;
@@ -22,6 +25,19 @@ function _Builder() {
 
   this.setup = function() {
   }
+
+
+  this.packageComponent = function() {
+    let data            = World.curComponent.export();
+    data.name           = HTML.nameHolder.value;
+    data.componentId    = newId();
+    HTML.nameHolder.value = null;
+    ComponentManager.addComponent(data);
+    return data;
+  }
+
+
+
 
 
   this.cancelBuildingLine = function() {

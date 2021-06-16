@@ -1,4 +1,6 @@
-
+function $() {
+  return document.querySelectorAll(...arguments);
+}
 
 function newId() {return parseInt(Math.round(Math.random() * 100000000) + "" + Math.round(Math.random() * 100000000));}
 

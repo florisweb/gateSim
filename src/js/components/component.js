@@ -289,7 +289,7 @@ function LineComponent({from, to}) {
 	this.draw = function() {
 		// let highestDepth = this.to.parent.getDepth() > this.from.parent.getDepth() ? this.to.parent.getDepth() : this.from.parent.getDepth();
 		
-		if (this.parent.getDepth() + 1 > Renderer.maxRenderDepth) return;
+		if (this.parent && this.parent.getDepth() + 1 > Renderer.maxRenderDepth) return;
 
 		Renderer.drawLib.ctx.lineWidth = 2;
 		Renderer.drawLib.drawLine({

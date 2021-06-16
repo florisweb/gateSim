@@ -21,13 +21,6 @@ function _World() {
     this.curComponent = component;
   }
 
-  this.packageComponent = function() {
-    let data            = this.curComponent.export();
-    data.name           = 'new name';
-    data.componentId    = newId();
-    return data;
-  }
-
 
   this.run = function() {
     for (let input of this.curComponent.inputs)
