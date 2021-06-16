@@ -8,26 +8,41 @@ function NandGateComponent({position, id}) {
 		inputs: [{name: 'input 1'}, {name: 'input 2'}],
 		outputs: [{name: 'output'}],
 	});
-	
-	this.addInverter = function() {
-		let inverter = new InverterComponent({position: new Vector(0, 20)});
-	  this.addComponent(inverter);
-		this.addComponent(new LineComponent({
-	   	from: this.inputs[0],
-	    to: inverter.inputs[0],
-	  }));
 
-		this.addComponent(new LineComponent({
-	   	from: this.inputs[1],
-	    to: inverter.inputs[0],
-	  }));
 
-	  this.addComponent(new LineComponent({
-	   	from: inverter.outputs[0],
-	    to: this.outputs[0],
-	  }));
-	}
+	let line1 = new LineComponent({
+		from: this.inputs[0],
+		to: this.outputs[0],
+	});
+
+	line1.run = function(_index) {
+		this.runIndex = _index;
+
+		this.turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
+		line2.turnedOn = this.turnedOn;
+		this.to.run(_index + 1);
+  	}
+  	this.addComponent(line1);
+
+
+	let line2 = new LineComponent({
+		from: this.inputs[1],
+		to: this.outputs[0],
+	});
+
+	line2.run = function(_index) {
+		this.runIndex = _index;
+
+		this.turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
+		line1.turnedOn = this.turnedOn;
+		this.to.run(_index + 1);
+  	}
+  	this.addComponent(line2);
+
+  	this.addComponent = function() {};
 }
+
+
 
 function InverterComponent({position, id}) {
 	Component.call(this, {

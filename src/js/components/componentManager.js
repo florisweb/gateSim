@@ -1,18 +1,17 @@
 
 
 function _ComponentManager() {
-	let nandGate = new NandGateComponent({position: new Vector(0, 0)});
-	nandGate.addInverter();
 	this.components = [
-		JSON.parse("{\"position\":[0,0],\"name\":\"Or Gate\",\"id\":2163675280867424,\"componentId\":8669924151900503,\"inputs\":[{\"name\":\"input 1\",\"turnedOn\":true},{\"name\":\"input 2\",\"turnedOn\":true}],\"outputs\":[{\"name\":\"output 1\",\"turnedOn\":true}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":2163675280867424,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":2163675280867424,\"index\":0,\"isInput\":false}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":2163675280867424,\"index\":1,\"isInput\":true},\"to\":{\"parentId\":2163675280867424,\"index\":0,\"isInput\":false}}]}"),
-		JSON.parse("{\"position\":[0,0],\"name\":\"And Gate\",\"id\":3053905272404609,\"componentId\":7620753948389335,\"inputs\":[{\"name\":\"input 1\"},{\"name\":\"input 2\"}],\"outputs\":[{\"name\":\"output 1\"}],\"content\":[{\"position\":[110.18867924528305,252.83018867924528],\"name\":\"Inverter\",\"id\":5486295181917157,\"componentId\":\"inverter\",\"inputs\":[{\"name\":\"input 1\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3053905272404609,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":true}},{\"position\":[106.41509433962267,299.6226415094339],\"name\":\"Inverter\",\"id\":5486295181917157,\"componentId\":\"inverter\",\"inputs\":[{\"name\":\"input 1\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3053905272404609,\"index\":1,\"isInput\":true},\"to\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":true}},{\"position\":[365.2830188679242,263.3962264150943],\"name\":\"Nand gate\",\"id\":3455827883671711,\"componentId\":\"nandgate\",\"inputs\":[{\"name\":\"input 1\"},{\"name\":\"input 2\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[{\"position\":[160.7547169811321,170.18867924528303],\"name\":\"Inverter\",\"id\":6072984542857026,\"componentId\":\"inverter\",\"inputs\":[{\"name\":\"input 1\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3455827883671711,\"index\":0,\"isInput\":true},\"to\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3455827883671711,\"index\":1,\"isInput\":true},\"to\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":6072984542857026,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":3455827883671711,\"index\":0,\"isInput\":false}}]},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":3455827883671711,\"index\":0,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":5486295181917157,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":3455827883671711,\"index\":1,\"isInput\":true}},{\"name\":\"line\",\"type\":\"line\",\"from\":{\"parentId\":3455827883671711,\"index\":0,\"isInput\":false},\"to\":{\"parentId\":3053905272404609,\"index\":0,\"isInput\":false}}]}"),
-		nandGate.export(),
+		(new NandGateComponent({position: new Vector(0, 0)})).export(),
 		(new InverterComponent({position: new Vector(0, 0)})).export(),
 	];
 
+	if (localStorage.components) this.components = this.components.concat(JSON.parse(localStorage.components));
+
 	this.addComponent = function(_component) {
 		this.components.push(_component);
-		SideBar.componentList.setComponentList(this.components)
+		SideBar.componentList.setComponentList(this.components);
+		localStorage.components = JSON.stringify(Object.assign([], this.components).splice(2, Infinity));
 	}
 
 	this.importComponent = function(_data, _isWorldComponent = false, _isRoot = true) {

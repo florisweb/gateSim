@@ -10,29 +10,7 @@
 	<body>		
 		<div id='sideBar'>
 			<div class='button bDefault bBoxy text' onclick='World.clear()'>New Component</div>
-			<div id='componentHolder'>
-				<div class='component' onclick=' 
-					nandGate = new NandGateComponent({position: new Vector(0, 0)});
-      				nandGate.addInverter();
-      				World.curComponent.addComponent(nandGate);
-      			'>
-					<div class='titleHolder text'>Nand Gate</div>
-					<img class='icon optionIcon clickable' src='images/icons/optionIcon.png'>
-					<canvas class='componentPreview'></canvas>
-				</div>
-
-				<div class='component' onclick='World.curComponent.addComponent(ComponentManager.importComponent(ComponentManager.components[1]))'>
-					<div class='titleHolder text'>And Gate</div>
-					<img class='icon optionIcon clickable' src='images/icons/optionIcon.png'>
-					<canvas class='componentPreview'></canvas>
-				</div>
-
-				<div class='component' onclick='World.curComponent.addComponent(ComponentManager.importComponent(ComponentManager.components[0]))'>
-					<div class='titleHolder text'>Or Gate</div>
-					<img class='icon optionIcon clickable' src='images/icons/optionIcon.png'>
-					<canvas class='componentPreview'></canvas>
-				</div>
-			</div>
+			<div id='componentHolder'></div>
 
 		</div>
 		<div id='mainContent'>
