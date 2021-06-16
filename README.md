@@ -1,24 +1,16 @@
 # gateSim
 
-new WorldComponent extends DataComponent
 
-new DataComponent
-- id
-- inputs [{name}]
-- outputs [{name}]
-- contents: [
-	new LineComponent(),
-	new DataComponent(),
-]
+- Basic components:
+new InOutput (Node > InOutPut > WorldInput/WorldOutput)
 
-new LineComponent({
-	from: 
-		- input: {id: 'input', index: index},
-		- component: {id: componentId, index: index},
-	to:
-		- output {id: 'output', index: index},
-		- component: {id: componentId, index: index},
-})
+
+new Component (BaseComponent + (DragComponent > BuildComponent) > Component)
+
+
+new LineComponent (BaseComponent > LineComponent)
+
+
 
 
 

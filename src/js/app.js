@@ -5,8 +5,10 @@ let World;
 let Renderer;
 let InputHandler;
 let Builder;
+let ComponentManager;
 const App = new function() {
 	this.setup = function() {
+		ComponentManager = new _ComponentManager();
   		World = new _World();
   		Renderer = new _Renderer();
   		InputHandler = new _InputHandler({canvas: worldCanvas});

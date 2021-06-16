@@ -1,12 +1,9 @@
 
-
-
-
 function NandGateComponent({position, id}) {
 	Component.call(this, {
 		position: position,
 		name: 'Nand gate',
-		id: id,
+		id: 'nandgatecomp',//id,
 		componentId: 'nandgate',
 		inputs: [{name: 'input 1'}, {name: 'input 2'}],
 		outputs: [{name: 'output'}],
@@ -35,7 +32,7 @@ function InverterComponent({position, id}) {
 	Component.call(this, {
 		position: position,
 		name: 'Inverter',
-		id: id,
+		id: 'invertercomp',// id,
 		componentId: 'inverter',
 		inputs: [{name: 'input 1'}],
 		outputs: [{name: 'output'}],
@@ -89,10 +86,10 @@ function InverterComponent({position, id}) {
 function BaseComponent({name, id, componentId, inputs = [], outputs = [], content = []}, _parent) {
 	let This 					= this;
 	this.parent 			= _parent;
+	this.id 					= id ? id : newId();
 
 	this.type 				= 'BaseComponent';
 	this.name 				= name;
-	this.id 					= id ? id : newId();
 	this.componentId 	= componentId;
 
 
@@ -111,6 +108,19 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = [], conten
 		_component.parent = this;
 		_component.activate();
 		this.content.push(_component);
+	}
+
+	this.getComponentById = function(_id) {
+		if (this.id == _id) return this;
+
+		for (let component of this.content)
+		{
+			if (component.id == _id) return component;
+			let nestedComponent = component.getComponentById(_id);
+			if (!nestedComponent) continue;
+			return nestedComponent;
+		}
+		return false;
 	}
 
 	this.remove = function() {
@@ -193,23 +203,118 @@ function Component({position, name, id, componentId, inputs, outputs, content}, 
 
 		for (let component of this.content) component.draw();
 	}
-}
 
 
-
-function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
-	Node.call(this, {turnedOn: turnedOn});
-	this.index = _index;
-	this.name = name;
-	this.isInput = _isInput;
-	this.parent = _parent;
-
-	this.getPosition = function() {
-		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
-		let y = this.parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (nodeRadius * 2 + inOutPutMargin * 2);
-		return this.parent.getPosition().copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
+	this.export = function() {
+		let obj = {
+			position: 		this.position.value, 
+			name: 				this.name, 
+			id: 					this.id, 
+			componentId: 	this.componentId, 
+			inputs: 			this.inputs.map(input => input.export()), 
+			outputs: 			this.outputs.map(output => output.export()), 
+			content: 			this.content.map(item => item.export()), 
+		}
+		return obj;
 	}
 }
+
+
+
+
+
+
+
+function LineComponent({from, to}) {
+	BaseComponent.call(this, {
+		name: 'line',
+		inputs: [],
+		outputs: [],
+		content: [],
+	});
+	this.type = 'line';
+
+	
+	this.from = from;
+	this.to = to;
+	this.runIndex = -1;
+
+	this.turnedOn = false;
+
+	this.run = function(_index) {
+		this.turnedOn = this.from.turnedOn;
+		if (debugging) console.log('Run line from ' + this.from.parent.name + " to " + this.to.parent.name, _index);
+		this.runIndex = _index;
+		this.to.run(_index + 1);
+	}
+
+
+
+	this.activate = function() {
+		if (this.from) this.from.fromLines.push(this);
+		if (this.to) this.to.toLines.push(this);
+	}
+
+
+	this.remove = function() {
+		for (let i = 0; i < this.parent.content.length; i++)
+		{
+			if (this.parent.content[i].id != this.id) continue;
+			this.parent.content.splice(i, 1);
+		}
+		
+		for (let i = 0; i < this.to.toLines.length; i++)
+		{
+			if (this.to.toLines[i].id != this.id) continue;
+			this.to.toLines.splice(i, 1);
+		}
+		for (let i = 0; i < this.from.fromLines.length; i++)
+		{
+			if (this.from.fromLines[i].id != this.id) continue;
+			this.from.fromLines.splice(i, 1);
+		}
+
+		this.to.run();
+	}
+
+
+
+	this.draw = function() {
+		let highestDepth = this.to.parent.getDepth() > this.from.parent.getDepth() ? this.to.parent.getDepth() : this.from.parent.getDepth();
+		if (highestDepth > Renderer.maxRenderDepth) return;
+
+		Renderer.drawLib.ctx.lineWidth = 2;
+		Renderer.drawLib.drawLine({
+			startPosition: this.from.getPosition(),
+			endPosition: this.to.getPosition(),
+			color: this.from.turnedOn ? '#f00' : '#aaa'
+		});
+		Renderer.drawLib.ctx.lineWidth = 1;
+	}
+
+
+	this.export = function() {
+		let item = {
+			name: this.name,
+			type: this.type,
+			from: {
+				parentId: 	this.from.parent.id,
+				index:  		this.from.index,
+				isInput: 		this.from.isInput
+			},
+			to: {
+				parentId: 	this.to.parent.id,
+				index: 			this.to.index,
+				isInput: 		this.to.isInput
+			}  
+		}
+		return item;
+	}
+} 
+
+
+
+
 
 
 
@@ -244,80 +349,32 @@ function Node({turnedOn}) {
 
 
 
+function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
+	Node.call(this, {turnedOn: turnedOn});
+	this.index = _index;
+	this.name = name;
+	this.isInput = _isInput;
+	this.parent = _parent;
 
-function LineComponent({id, from, to}) {
-	BaseComponent.call(this, {
-		id: id,
-		name: 'line',
-		inputs: [],
-		outputs: [],
-		content: [],
-	});
-	RunComponent.call(this, {
-		from: from,
-		to: to
-	});
-
-
-	this.type = 'line';
-
-	this.activate = function() {
-		if (this.from) this.from.fromLines.push(this);
-		if (this.to) this.to.toLines.push(this);
+	this.getPosition = function() {
+		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
+		let y = this.parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (nodeRadius * 2 + inOutPutMargin * 2);
+		return this.parent.getPosition().copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
 	}
 
-	this.remove = function() {
-		for (let i = 0; i < this.parent.content.length; i++)
-		{
-			if (this.parent.content[i].id != this.id) continue;
-			this.parent.content.splice(i, 1);
+	this.export = function() {
+		let item = {
+			name: this.name,
+			turnedOn: this.turnedOn
 		}
-		
-		for (let i = 0; i < this.to.toLines.length; i++)
-		{
-			if (this.to.toLines[i].id != this.id) continue;
-			this.to.toLines.splice(i, 1);
-		}
-		for (let i = 0; i < this.from.fromLines.length; i++)
-		{
-			if (this.from.fromLines[i].id != this.id) continue;
-			this.from.fromLines.splice(i, 1);
-		}
-
-		this.to.run();
-	}
-
-	this.draw = function() {
-		let highestDepth = this.to.parent.getDepth() > this.from.parent.getDepth() ? this.to.parent.getDepth() : this.from.parent.getDepth();
-		if (highestDepth > Renderer.maxRenderDepth) return;
-
-		Renderer.drawLib.ctx.lineWidth = 2;
-		Renderer.drawLib.drawLine({
-			startPosition: this.from.getPosition(),
-			endPosition: this.to.getPosition(),
-			color: this.from.turnedOn ? '#f00' : '#aaa'
-		});
-		Renderer.drawLib.ctx.lineWidth = 1;
-	}
-} 
-
-
-
-
-function RunComponent({from, to}) {
-	this.from = from;
-	this.to = to;
-	this.runIndex = -1;
-
-	this.turnedOn = false;
-
-	this.run = function(_index) {
-		this.turnedOn = this.from.turnedOn;
-		if (debugging) console.log('Run line from ' + this.from.parent.name + " to " + this.to.parent.name, _index);
-		this.runIndex = _index;
-		this.to.run(_index + 1);
+		return item;
 	}
 }
+
+
+
+
+
 
 
 
@@ -364,17 +421,18 @@ function WorldOutput({name, turnedOn}, _parent, _index) {
 }
 
 
-function CurComponent({inputs, outputs}) {
+function CurComponent({inputs, outputs, content = []}) {
 	let This = this;
 	Component.call(this, { 
-		position: new Vector(0, 0), 
-		name: 'CurComponent', 
-		id: 'worldComponent',
-		componentId: 'worldComponent', 
-		inputs: inputs, 
-		outputs: outputs, 
-		content: [],
+		position: 		new Vector(0, 0), 
+		name: 				'CurComponent', 
+		id: 					'worldComponent',
+		componentId: 	'worldComponent', 
+		inputs: 			inputs, 
+		outputs: 			outputs, 
+		content: 			content,
 	});
+	
 	this.size = World.size;
 	this.inputs = inputs.map(function (item, i) {
 		return new WorldInput(item, This, i);
@@ -410,11 +468,6 @@ function BuildComponent() {
 		this.selected = true;
 	}
 }
-
-
-
-
-
 
 
 

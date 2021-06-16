@@ -12,7 +12,7 @@ function _World() {
     });
 
 
-    let nandGate = new NandGateComponent({position: new Vector(400, 300), id: 'test'});
+    let nandGate = new NandGateComponent({position: new Vector(400, 300)});
 
 
     this.curComponent.addComponent(nandGate);
@@ -77,6 +77,12 @@ function _World() {
     this.update();
   }
 
+
+  this.import = function(_data) {
+    Builder.list = [];
+    let component = ComponentManager.importComponent(_data);
+    this.curComponent = component;
+  }
 
   this.run = function() {
     for (let input of this.curComponent.inputs)
