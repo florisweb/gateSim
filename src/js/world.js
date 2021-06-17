@@ -33,6 +33,7 @@ function _World() {
 
 
   this.run = function() {
+    console.log('run');
     for (let input of this.curComponent.inputs)
     {
       input.run(0);
@@ -40,7 +41,7 @@ function _World() {
   }
 
   this.update = function() {
-    this.run();
+    // this.run();
     Builder.update();
 
     setTimeout(function () {

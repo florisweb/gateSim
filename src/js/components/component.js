@@ -44,33 +44,6 @@ function NandGateComponent({position, id}) {
 
 
 
-function InverterComponent({position, id}) {
-	Component.call(this, {
-		position: position,
-		name: 'Inverter',
-		id: id,
-		componentId: 'inverter',
-		inputs: [{name: 'input 1'}],
-		outputs: [{name: 'output'}],
-	});
-
-
-	let line = new LineComponent({
-    from: this.inputs[0],
-    to: this.outputs[0],
-  });
-
-  line.run = function(_index) {
-		this.turnedOn = !this.from.turnedOn;
-		this.runIndex = _index;
-		this.to.run(_index + 1);
-  }
-  this.addComponent(line);
-
-  this.addComponent = function() {};
-}
-
-
 
 
 
@@ -434,6 +407,7 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 	}
 	this.onclick = function() {
 		this.setStatus(!activationLine.turnedOn);
+		this.run();
 	}
 }
 
@@ -451,7 +425,7 @@ function CurComponent({inputs, outputs, id}) {
 		id: 			id,
 		componentId: 	'worldComponent', 
 		inputs: 		inputs, 
-		outputs: 		outputs, 
+		outputs: 		outputs,
 	});
 
 	this.size = World.size;
@@ -461,6 +435,8 @@ function CurComponent({inputs, outputs, id}) {
 	this.outputs = outputs.map(function (item, i) {
 		return new WorldOutput(item, This, i);
 	});
+
+	this.onclick = function() {};
 
 	this.fillColor = 'rgba(0, 0, 0, 0)';
 }

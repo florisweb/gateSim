@@ -3,7 +3,6 @@
 function _ComponentManager() {
 	this.components = [
 		(new NandGateComponent({position: new Vector(0, 0)})).export(),
-		(new InverterComponent({position: new Vector(0, 0)})).export(),
 	];
 
 	if (localStorage.components) this.components = this.components.concat(JSON.parse(localStorage.components));
@@ -20,7 +19,6 @@ function _ComponentManager() {
 		switch (_data.componentId)
 		{
 			case 'nandgate': 		componentConstructor = NandGateComponent; break;
-			case 'inverter': 		componentConstructor = InverterComponent; break;
 			case 'worldComponent': 	componentConstructor = CurComponent; break;
 		}
 		if (_isWorldComponent) componentConstructor = CurComponent;
