@@ -121,9 +121,10 @@ function _ComponentManager() {
 	this.componentReferenceToComponent = function(_reference, _isWorldComponent, _isRoot) {
 		let componentData = this.getComponentByCompId(_reference.componentId);
 		if (!componentData) return console.warn('Component not loaded:', _reference.componentId);
-		componentData.position 	= _reference.position;
-		componentData.id 		= _reference.id;
-		return this.importComponent(componentData, _isWorldComponent, _isRoot);
+		let comp = this.importComponent(componentData, _isWorldComponent, _isRoot);
+		comp.position 	= _reference.position;
+		comp.id 		= _reference.id;
+		return comp;
 	}
 
 
