@@ -1,5 +1,6 @@
 
 function NandGateComponent({position, id}) {
+	let This = this;
 	Component.call(this, {
 		position: position,
 		name: 'Nand gate',
@@ -9,37 +10,18 @@ function NandGateComponent({position, id}) {
 		outputs: [{name: 'output'}],
 	});
 
+  	this.inputs[0].run = this.inputs[1].run = function(_index) {
+  		this.turnedOn = false;
+		for (let line of this.toLines)
+		{
+			if (!line.from.turnedOn) continue;
+			this.turnedOn = true;
+			break;
+		}
 
-	let line1 = new LineComponent({
-		from: this.inputs[0],
-		to: this.outputs[0],
-	});
-
-	line1.run = function(_index) {
-		this.runIndex = _index;
-
-		this.turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
-		line2.turnedOn = this.turnedOn;
-		this.to.run(_index + 1);
-  	}
-  	this.addComponent(line1);
-
-
-	let line2 = new LineComponent({
-		from: this.inputs[1],
-		to: this.outputs[0],
-	});
-
-	line2.run = function(_index) {
-		this.runIndex = _index;
-
-		this.turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
-		line1.turnedOn = this.turnedOn;
-		this.to.run(_index + 1);
-  	}
-  	this.addComponent(line2);
-
-  	this.addComponent = function() {};
+  		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
+  		for (let line of this.parent.outputs[0].fromLines) line.to.run(_index + 1);
+  	};
 }
 
 
@@ -176,6 +158,7 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 		for (let component of this.content)
 		{
 			if (component.id == _id) return component;
+			if (component.type == 'line') continue;
 			let nestedComponent = component.getComponentById(_id);
 			if (!nestedComponent) continue;
 			return nestedComponent;
@@ -224,24 +207,11 @@ function LineComponent({from, to}) {
 	
 	this.from = from;
 	this.to = to;
-	this.runIndex = -1;
-
-	this.turnedOn = false;
-
-	this.run = function(_index) {
-		this.turnedOn = this.from.turnedOn;
-		if (debugging) console.log('Run line from ' + this.from.parent.name + " to " + this.to.parent.name, _index);
-		this.runIndex = _index;
-		this.to.run(_index + 1);
-	}
-
-
 
 	this.activate = function() {
 		if (this.from) this.from.fromLines.push(this);
 		if (this.to) this.to.toLines.push(this);
 	}
-
 
 	this.remove = function() {
 		for (let i = 0; i < this.parent.content.length; i++)
@@ -314,13 +284,13 @@ function Node({turnedOn}) {
 		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
-			if (!line.turnedOn) continue;
+			if (!line.from.turnedOn) continue;
 			this.turnedOn = true;
 			break;
 		}
 		
 		if (debugging) console.log(_index, 'Run node status: ' + this.turnedOn);
-		for (let line of this.fromLines) line.run(_index);
+		for (let line of this.fromLines) line.to.run(_index + 1)
 	}
 
 
@@ -433,21 +403,16 @@ function DragComponent() {
 function WorldInput({name, turnedOn}, _parent, _index) {
 	InOutput.call(this, {name, turnedOn}, _parent, _index, true);
 	this.isWorldInput = true;
-
-	let activationLine = new LineComponent({
-      from: false,
-      to: this,
-    })
-
-	this.toLines.push(activationLine);
-
-
 	this.setStatus = function(_status) {
-		activationLine.turnedOn = _status;
+		this.turnedOn = _status;
 	}
 	this.onclick = function() {
-		this.setStatus(!activationLine.turnedOn);
+		this.setStatus(!this.turnedOn);
 		this.run();
+	}
+
+	this.run = function() {
+		for (let line of this.fromLines) line.to.run(1);
 	}
 }
 

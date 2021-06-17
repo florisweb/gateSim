@@ -192,3 +192,12 @@ function clearSelection() {
 
 
 
+function binaryToNumber(_binaryString) {
+  let sum = 0;
+  for (let i = 0; i < _binaryString.length; i++)
+  {
+    if (_binaryString[i] == '0') continue;
+    sum += Math.pow(2, i); 
+  }
+  return sum;
+}

@@ -10,7 +10,7 @@ function _ComponentManager() {
 	this.addComponent = function(_component) {
 		this.components.push(_component);
 		SideBar.componentList.setComponentList(this.components);
-		localStorage.components = JSON.stringify(Object.assign([], this.components).splice(2, Infinity));
+		localStorage.components = JSON.stringify(Object.assign([], this.components).splice(1, Infinity));
 	}
 
 	this.importComponent = function(_data, _isWorldComponent = false, _isRoot = true) {
