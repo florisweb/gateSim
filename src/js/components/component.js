@@ -70,17 +70,28 @@ function NandGateComponent({position, id}) {
 
 
 
+function BaseComponent({name, id}) {
+	this.id 	= id ? id : newId();
+
+	this.type 	= 'BaseComponent';
+	this.name 	= name;
+
+	this.activate = function() {};
+	this.getPosition = function() {
+		let parentPos = new Vector(0, 0);
+		if (this.parent) parentPos = this.parent.getPosition();
+		return this.position.copy().add(parentPos);
+	}
+}
 
 
+function Component({position, name, id, componentId, inputs, outputs, content}) {
+	let This = this;
+	BaseComponent.call(this, ...arguments);
 
-function BaseComponent({name, id, componentId, inputs = [], outputs = []}) {
-	let This 					= this;
-	this.id 					= id ? id : newId();
-
-	this.type 				= 'BaseComponent';
-	this.name 				= name;
-	this.componentId 	= componentId;
-
+	this.type = 'component';
+	this.componentId = componentId;
+	this.position = position;
 
 	this.inputs = inputs.map(function (item, i) {
 		return new InOutput(item, This, i, true);
@@ -91,77 +102,15 @@ function BaseComponent({name, id, componentId, inputs = [], outputs = []}) {
 
 	this.content = [];
 
-	this.activate = function() {};
-
-	this.addComponent = function(_component) {
-		_component.parent = this;
-		_component.activate();
-		this.content.push(_component);
-	}
-
-	this.getComponentById = function(_id) {
-		if (this.id == _id) return this;
-
-		for (let component of this.content)
-		{
-			if (component.id == _id) return component;
-			let nestedComponent = component.getComponentById(_id);
-			if (!nestedComponent) continue;
-			return nestedComponent;
-		}
-		return false;
-	}
-
-	this.remove = function() {
-		for (let item of this.content) item.remove();
-		Builder.unregister(this.id);
-
-		for (let node of this.inputs) 
-		{
-			for (let i = node.toLines.length - 1; i >= 0; i--) node.toLines[i].remove();
-		}
-		for (let node of this.outputs) 
-		{
-			for (let i = node.fromLines.length - 1; i >= 0; i--) node.fromLines[i].remove();
-		}
 
 
-		for (let i = 0; i < this.parent.content.length; i++)
-		{
-			if (this.parent.content[i].id != this.id) continue;
-			this.parent.content.splice(i, 1);
-		}
-	}
-
-
-	this.getPosition = function() {
-		let parentPos = new Vector(0, 0);
-		if (this.parent) parentPos = this.parent.getPosition();
-		return this.position.copy().add(parentPos);
-	}
-
-	this.getDepth = function() {
-		if (!this.parent) return 0;
-		return this.parent.getDepth() + 1;
-	}
-}
-
-
-
-
-function Component({position, name, id, componentId, inputs, outputs, content}) {
-	BaseComponent.call(this, ...arguments);
-
-	this.type = 'component';
-	this.position = position;
 
 	this.size = new Vector(0, 0);
 	let maxPorts = this.inputs.length > this.outputs.length ? this.inputs.length : this.outputs.length;
 	this.size = new Vector(100, maxPorts * 40);
 
+
 	BuildComponent.call(this);
-
-
 
 	this.fillColor = '#555';
 
@@ -213,6 +162,52 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 		}
 		return obj;
 	}
+
+
+	this.addComponent = function(_component) {
+		_component.parent = this;
+		_component.activate();
+		this.content.push(_component);
+	}
+
+	this.getComponentById = function(_id) {
+		if (this.id == _id) return this;
+
+		for (let component of this.content)
+		{
+			if (component.id == _id) return component;
+			let nestedComponent = component.getComponentById(_id);
+			if (!nestedComponent) continue;
+			return nestedComponent;
+		}
+		return false;
+	}
+
+	this.remove = function() {
+		for (let item of this.content) item.remove();
+		Builder.unregister(this.id);
+
+		for (let node of this.inputs) 
+		{
+			for (let i = node.toLines.length - 1; i >= 0; i--) node.toLines[i].remove();
+		}
+		for (let node of this.outputs) 
+		{
+			for (let i = node.fromLines.length - 1; i >= 0; i--) node.fromLines[i].remove();
+		}
+
+
+		for (let i = 0; i < this.parent.content.length; i++)
+		{
+			if (this.parent.content[i].id != this.id) continue;
+			this.parent.content.splice(i, 1);
+		}
+	}
+
+	this.getDepth = function() {
+		if (!this.parent) return 0;
+		return this.parent.getDepth() + 1;
+	}
 }
 
 
@@ -224,11 +219,8 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 function LineComponent({from, to}) {
 	BaseComponent.call(this, {
 		name: 'line',
-		inputs: [],
-		outputs: [],
 	});
 	this.type = 'line';
-
 	
 	this.from = from;
 	this.to = to;
@@ -274,9 +266,7 @@ function LineComponent({from, to}) {
 
 
 
-	this.draw = function() {
-		// let highestDepth = this.to.parent.getDepth() > this.from.parent.getDepth() ? this.to.parent.getDepth() : this.from.parent.getDepth();
-		
+	this.draw = function() {		
 		if (this.parent && this.parent.getDepth() + 1 > Renderer.maxRenderDepth) return;
 
 		Renderer.drawLib.ctx.lineWidth = 2;
@@ -315,9 +305,9 @@ function LineComponent({from, to}) {
 
 
 function Node({turnedOn}) {
-	this.id 				= Symbol();
+	this.id 		= Symbol();
 	this.turnedOn 	= turnedOn;
-	this.toLines 		= [];
+	this.toLines 	= [];
 	this.fromLines 	= [];
 
 	this.run = function(_index) {
@@ -365,6 +355,56 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 		return item;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+function BuildComponent() {
+	DragComponent.call(this);
+	this.selected = false;
+
+	this.onclick = function() {
+		this.selected = true;
+	}
+}
+
+
+
+function DragComponent() {
+	this.draggable = true;
+
+	this.hitBox = this.size.copy();
+
+	this.isPointInside = function(_position) {
+		let delta = this.getPosition().difference(_position);
+		if (delta.value[0] > this.hitBox.value[0] || delta.value[0] < 0) return false;
+		if (delta.value[1] > this.hitBox.value[1] || delta.value[1] < 0) return false;
+
+		return true;
+	}
+
+
+	this.drag = function(_delta) {
+		this.position.add(_delta.copy().scale(-1));
+	}
+	Builder.register(this);
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -450,43 +490,6 @@ function CurComponent({inputs, outputs, id}) {
 
 
 
-
-
-
-
-
-
-
-function BuildComponent() {
-	DragComponent.call(this);
-	this.selected = false;
-
-	this.onclick = function() {
-		this.selected = true;
-	}
-}
-
-
-
-function DragComponent() {
-	this.draggable = true;
-
-	this.hitBox = this.size.copy();
-
-	this.isPointInside = function(_position) {
-		let delta = this.getPosition().difference(_position);
-		if (delta.value[0] > this.hitBox.value[0] || delta.value[0] < 0) return false;
-		if (delta.value[1] > this.hitBox.value[1] || delta.value[1] < 0) return false;
-
-		return true;
-	}
-
-
-	this.drag = function(_delta) {
-		this.position.add(_delta.copy().scale(-1));
-	}
-	Builder.register(this);
-}
 
 
 
