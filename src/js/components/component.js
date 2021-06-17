@@ -132,17 +132,38 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 	}
 
 
-	this.export = function() {
-		let obj = {
-			position: 		this.position.value, 
-			name: 				this.name, 
-			id: 					this.id, 
-			componentId: 	this.componentId, 
-			inputs: 			this.inputs.map(input => input.export()), 
-			outputs: 			this.outputs.map(output => output.export()), 
-			content: 			this.content.map(item => item.export()), 
+	// this.export = function() {
+	// 	let obj = {
+	// 		position: 		this.position.value, 
+	// 		name: 			this.name, 
+	// 		id: 			this.id, 
+	// 		componentId: 	this.componentId, 
+	// 		inputs: 		this.inputs.map(input => input.export()), 
+	// 		outputs: 		this.outputs.map(output => output.export()), 
+	// 		content: 		this.content.map(item => item.export()), 
+	// 	}
+	// 	return obj;
+	// }
+
+	this.export = function(_asReference = false) {
+		if (_asReference) 
+		{
+			return {
+				position: 		this.position.value, 
+				id: 			this.id, 
+				componentId: 	this.componentId
+			}
 		}
-		return obj;
+
+		return {
+			position: 		this.position.value, 
+			name: 			this.name, 
+			id: 			this.id, 
+			componentId: 	this.componentId, 
+			inputs: 		this.inputs.map(input => input.export()), 
+			outputs: 		this.outputs.map(output => output.export()), 
+			content: 		this.content.map(item => item.export(true)), 
+		}
 	}
 
 
@@ -432,7 +453,9 @@ function CurComponent({inputs, outputs, id}) {
 		inputs: 		inputs, 
 		outputs: 		outputs,
 	});
-
+	this.draggable = false;
+	this.onclick = function() {};
+	
 	this.size = World.size;
 	this.inputs = inputs.map(function (item, i) {
 		return new WorldInput(item, This, i);
@@ -441,7 +464,6 @@ function CurComponent({inputs, outputs, id}) {
 		return new WorldOutput(item, This, i);
 	});
 
-	this.onclick = function() {};
 
 	this.fillColor = 'rgba(0, 0, 0, 0)';
 }

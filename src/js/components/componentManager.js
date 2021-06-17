@@ -7,14 +7,67 @@ function _ComponentManager() {
 
 	if (localStorage.components) this.components = this.components.concat(JSON.parse(localStorage.components));
 
+	this.getComponentByCompId = function(_compId) {
+		for (let component of this.components)
+		{
+			if (component.componentId != _compId) continue;
+			return component;
+		}
+		return false;
+	}
+
+
+
 	this.addComponent = function(_component) {
 		this.components.push(_component);
 		SideBar.componentList.setComponentList(this.components);
 		localStorage.components = JSON.stringify(Object.assign([], this.components).splice(1, Infinity));
 	}
 
-	this.importComponent = function(_data, _isWorldComponent = false, _isRoot = true) {
+	// this.importComponent = function(_data, _isWorldComponent = false, _isRoot = true) {
+	// 	let componentConstructor = Component;
+	// 	switch (_data.componentId)
+	// 	{
+	// 		case 'nandgate': 		componentConstructor = NandGateComponent; break;
+	// 		case 'worldComponent': 	componentConstructor = CurComponent; break;
+	// 	}
+	// 	if (_isWorldComponent) componentConstructor = CurComponent;
 
+
+	// 	let component = new componentConstructor({
+	// 		id: 				_data.id,
+	// 		name: 				_data.name,
+	// 		componentId: 		_data.componentId,
+	// 		position: 			new Vector(..._data.position),
+	// 		inputs:  			_data.inputs,
+	// 		outputs:  			_data.outputs
+	// 	});
+
+	// 	let lines = [];
+	// 	for (let componentData of _data.content)
+	// 	{
+	// 		if (componentData.type == 'line')
+	// 		{
+	// 			lines.push(componentData);
+	// 			continue;
+	// 		}
+
+	// 		component.addComponent(this.importComponent(componentData, false, false));
+	// 	}
+
+
+	// 	for (let lineData of lines)
+	// 	{
+	// 		let line = this.importLine(lineData, component);
+	// 		component.addComponent(line);
+	// 	}
+
+	// 	if (_isRoot) return setNewIds(component);
+	// 	return component;
+	// }
+
+
+	this.importComponent = function(_data, _isWorldComponent = false, _isRoot = true) {
 		let componentConstructor = Component;
 		switch (_data.componentId)
 		{
@@ -34,17 +87,25 @@ function _ComponentManager() {
 		});
 
 		let lines = [];
-		for (let componentData of _data.content)
+		for (let componentReference of _data.content)
 		{
-			if (componentData.type == 'line')
+			if (componentReference.type == 'line')
 			{
-				lines.push(componentData);
+				lines.push(componentReference);
 				continue;
 			}
-
-			component.addComponent(this.importComponent(componentData, false, false));
+			let newComponent = this.componentReferenceToComponent(componentReference, false, false);
+			component.addComponent(newComponent);
 		}
 
+
+		// position: 		this.position.value, 
+		// 	name: 			this.name, 
+		// 	id: 			this.id, 
+		// 	componentId: 	this.componentId, 
+		// 	inputs: 		this.inputs.map(input => input.export()), 
+		// 	outputs: 		this.outputs.map(output => output.export()), 
+		// 	content: 		this.content.map(item => item.export()), 
 
 		for (let lineData of lines)
 		{
@@ -55,6 +116,20 @@ function _ComponentManager() {
 		if (_isRoot) return setNewIds(component);
 		return component;
 	}
+
+	
+	this.componentReferenceToComponent = function(_reference, _isWorldComponent, _isRoot) {
+		let componentData = this.getComponentByCompId(_reference.componentId);
+		if (!componentData) return console.warn('Component not loaded:', _reference.componentId);
+		componentData.position 	= _reference.position;
+		componentData.id 		= _reference.id;
+		return this.importComponent(componentData, _isWorldComponent, _isRoot);
+	}
+
+
+
+
+
 
 	function setNewIds(_masterComponent) {
 		_masterComponent.id = newId();
@@ -77,10 +152,10 @@ function _ComponentManager() {
 
 	function getNodeByData(_data, _component) {
 		let targetComponent = _component.getComponentById(_data.parentId);
-		if (!targetComponent) return console.warn('component not found', _data, _component.content);
+		if (!targetComponent) return console.warn('Component not found', _data, _component.content);
 
 		let arr = _data.isInput ? targetComponent.inputs : targetComponent.outputs;
-		if (_data.index > arr.length - 1) return console.warn('component-node not found', _data);;
+		if (_data.index > arr.length - 1) return console.warn('Component-node not found', _data);;
 		return arr[_data.index];
 	}
 }
