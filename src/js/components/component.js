@@ -52,11 +52,12 @@ function NandGateComponent({position, id}) {
 
 
 
-function BaseComponent({name, id}) {
+function BaseComponent({name, id, position}) {
 	this.id 	= id ? id : newId();
 
-	this.type 	= 'BaseComponent';
-	this.name 	= name;
+	this.type 		= 'BaseComponent';
+	this.name 		= name;
+	this.position 	= position;
 
 	this.activate = function() {};
 	this.getPosition = function() {
@@ -73,7 +74,6 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 	this.type = 'component';
 	this.componentId = componentId;
-	this.position = position;
 
 	this.inputs = inputs.map(function (item, i) {
 		return new InOutput(item, This, i, true);
@@ -83,9 +83,6 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 	});
 
 	this.content = [];
-
-
-
 
 	this.size = new Vector(0, 0);
 	let maxPorts = this.inputs.length > this.outputs.length ? this.inputs.length : this.outputs.length;

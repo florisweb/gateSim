@@ -122,7 +122,7 @@ function _ComponentManager() {
 		let componentData = this.getComponentByCompId(_reference.componentId);
 		if (!componentData) return console.warn('Component not loaded:', _reference.componentId);
 		let comp = this.importComponent(componentData, _isWorldComponent, _isRoot);
-		comp.position 	= _reference.position;
+		comp.position 	= new Vector(..._reference.position);
 		comp.id 		= _reference.id;
 		return comp;
 	}
