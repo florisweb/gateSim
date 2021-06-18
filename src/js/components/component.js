@@ -372,6 +372,7 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 
 
 function BuildComponent() {
+	HitBoxComponent.call(this, {hitBox: this.size});
 	DragComponent.call(this);
 	ClickComponent.call(this);
 	this.selected = false;
@@ -387,7 +388,6 @@ function ClickComponent() {
 }
 
 function DragComponent() {
-	HitBoxComponent.call(this, {hitBox: this.size});
 	this.draggable = true;
 	this.drag = function(_delta) {
 		this.position.add(_delta.copy().scale(-1));

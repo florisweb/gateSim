@@ -163,6 +163,7 @@ function _KeyHandler() {
 				if (!Builder.curSelectedItem) return;
 				Builder.curSelectedItem.remove();
 				Builder.curSelectedItem = false;
+				Builder.cancelBuildingLine();
 			},
 			ignoreIfInInputField: true
 		},

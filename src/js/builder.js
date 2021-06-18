@@ -64,6 +64,17 @@ function _Builder() {
         if (!clickedItem.isWorldOutput && !clickedItem.isInput) return;
 
         this.curBuildLine.to = clickedItem;
+
+
+        // Check if this line already exists, if so remove it.
+        for (let line of this.curBuildLine.from.fromLines)
+        {
+          if (line.to.index != this.curBuildLine.to.index || line.to.parent.id != this.curBuildLine.to.parent.id) continue;
+          line.remove();
+          this.curBuildLine = false;
+          return;
+        }
+
         World.curComponent.addComponent(this.curBuildLine);
         this.curBuildLine.to.run(0);
 
