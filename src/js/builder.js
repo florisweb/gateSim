@@ -95,7 +95,7 @@ function _Builder() {
 
     this.curSelectedItem = false;
     if (!clickedItem) return;
-    this.curSelectedItem = clickedItem;
+    if (clickedItem.id != World.curComponent.id) this.curSelectedItem = clickedItem;
     clickedItem.onclick();
   }
 

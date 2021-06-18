@@ -1,4 +1,4 @@
-
+window.instantRun = false;
 function NandGateComponent({position, id}) {
 	let This = this;
 	Component.call(this, {
@@ -23,9 +23,6 @@ function NandGateComponent({position, id}) {
   		for (let line of this.parent.outputs[0].fromLines) line.to.run(_index + 1);
   	};
 }
-
-
-
 
 
 
@@ -308,7 +305,12 @@ function Node({turnedOn}) {
 		if (debugging) console.log(_index, 'Run node status: ' + this.turnedOn);
 		if (prevStatus == this.turnedOn && !_fullRun) return;
 
-		for (let line of this.fromLines) line.to.run(_index + 1, _fullRun)
+		if (window.instantRun)
+		{
+			for (let line of this.fromLines) line.to.run(_index + 1, _fullRun);
+		} else {
+			for (let line of this.fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, 0);
+		}
 	}
 
 	this.remove = function() {
