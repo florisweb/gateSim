@@ -2,7 +2,7 @@
 
 function _ComponentManager() {
 	this.components = [
-		(new NandGateComponent({position: new Vector(0, 0)})).export(),
+		JSON.parse("{\"position\":[0,0],\"name\":\"Nand gate\",\"id\":4461559745884998,\"componentId\":\"nandgate\",\"inputs\":[{\"name\":\"input 1\"},{\"name\":\"input 2\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[]}")
 	];
 
 	if (localStorage.components) this.components = this.components.concat(JSON.parse(localStorage.components));

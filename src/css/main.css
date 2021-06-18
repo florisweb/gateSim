@@ -92,8 +92,9 @@ html, body {
     position: relative;
     width:  100%;
     height: auto;
-
-    border:  1px solid red;
+    max-height: calc(100vh - 50px);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 #componentHolder .component {
     position: relative;

@@ -5,7 +5,7 @@
 		<title>GateSimulator</title>
 		<meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0' name='viewport'/>
 
-		<link rel="stylesheet" type="text/css" href="main_min.css?a=11">
+		<link rel="stylesheet" type="text/css" href="main_min.css">
 	</head>	
 	<body>		
 		<div id='sideBar'>

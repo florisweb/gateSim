@@ -71,6 +71,11 @@ function BaseComponent({name, id, position}) {
 function Component({position, name, id, componentId, inputs, outputs, content}) {
 	let This = this;
 	BaseComponent.call(this, ...arguments);
+	this.activate = function() {
+		this.enableHitBox();
+		for (let input of this.inputs) input.enableHitBox();
+		for (let output of this.outputs) output.enableHitBox();
+	}
 
 	this.type = 'component';
 	this.componentId = componentId;
@@ -144,8 +149,10 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 	this.addComponent = function(_component) {
 		_component.parent = this;
-		_component.activate();
 		this.content.push(_component);
+		setTimeout(function () {
+			_component.activate();
+		}, 0);
 	}
 
 	this.getComponentById = function(_id) {
@@ -368,6 +375,11 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 		drawNode.call(this);
 		this.toggleButton.draw();
 	}
+	let enableHitBox = this.enableHitBox;
+	this.enableHitBox = function() {
+		enableHitBox.call(this);
+		this.toggleButton.enableHitBox();
+	}
 
 	this.remove = function() {
 		HitBoxManager.unregister(this.hitBoxId);
@@ -434,6 +446,8 @@ function CurComponent({inputs, outputs, id}) {
 	
 	this.size = World.size;
 	this.fillColor = 'rgba(0, 0, 0, 0)';
+
+	this.activate();
 }
 
 
@@ -487,7 +501,6 @@ function DragComponent() {
 	Builder.register(this);
 }
 
-
 function HitBoxComponent({hitBox}) {
 	let HitBox = hitBox.copy();
 	this.area = HitBox.value[0] * HitBox.value[1];
@@ -501,7 +514,12 @@ function HitBoxComponent({hitBox}) {
 		return true;
 	}
 
-	HitBoxManager.register(this);
+	let enabled = false;
+	this.enableHitBox = function() {
+		if (enabled) return console.warn('Already enabled');
+		enabled = true;
+		HitBoxManager.register(this);
+	}
 }
 
 function CircularHitBoxComponent({radius}) {

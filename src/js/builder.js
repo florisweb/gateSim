@@ -121,7 +121,7 @@ function _Builder() {
 
 
   this.onDragStart = function(_position) {
-    let item = HitBoxManager.getItemByPosition(_position);
+    let item = HitBoxManager.getItemByPosition(_position, {mustBeDraggable: true});
     if (!item || !item.draggable) return;
     this.curDragItem = item;
     this.dragging = true;
