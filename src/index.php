@@ -9,7 +9,7 @@
 	</head>	
 	<body>		
 		<div id='sideBar'>
-			<div class='button bDefault bBoxy text' onclick='World.clear()'>New Component</div>
+			<div class='button bDefault bBoxy text' onclick='Builder.newChip()'>New Component</div>
 			<div id='componentHolder'></div>
 
 		</div>

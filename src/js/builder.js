@@ -22,6 +22,11 @@ function _Builder() {
     }
   }
 
+  this.newChip = function(_inputs = 2, _outputs = 1) {
+    this.cancelBuildingLine();
+    World.clear(_inputs, _outputs);
+  }
+
 
   this.setup = function() {
   }
@@ -60,6 +65,8 @@ function _Builder() {
 
         this.curBuildLine.to = clickedNode;
         World.curComponent.addComponent(this.curBuildLine);
+        this.curBuildLine.to.run(0);
+
         this.curBuildLine = false;
         return;
       }
