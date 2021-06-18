@@ -137,21 +137,19 @@ function Renderer_DrawLib({canvas}) {
 	}
 
 	this.drawWorldGrid = function() {
-		const gridSize = 50 * Math.ceil(this.camera.zoom);
-		// ctx.strokeStyle = "#444";
-		ctx.strokeStyle = "rgba(100, 100, 100, .1)";
+		const gridSize = World.grid.gridSize;// * Math.ceil(Renderer.camera.zoom);
+		ctx.strokeStyle = "#444";
 		
-		
-		for (let dx = gridSize; dx < PhysicsEngine.world.size.value[0]; dx += gridSize)
+		for (let dx = gridSize; dx < World.size.value[0]; dx += gridSize)
 		{
-			let canvasPosA = this.camera.worldPosToCanvasPos(new Vector([
+			let canvasPosA = Renderer.camera.worldPosToCanvPos(new Vector(
 				dx, 
 				0
-			]));
-			let canvasPosB = this.camera.worldPosToCanvasPos(new Vector([
+			));
+			let canvasPosB = Renderer.camera.worldPosToCanvPos(new Vector(
 				dx, 
-				PhysicsEngine.world.size.value[1]
-			]));
+				World.size.value[1]
+			));
 
 			ctx.beginPath();
 			ctx.moveTo(canvasPosA.value[0], canvasPosA.value[1]);
@@ -160,16 +158,16 @@ function Renderer_DrawLib({canvas}) {
 			ctx.stroke();
 		}
 
-		for (let dy = gridSize; dy < PhysicsEngine.world.size.value[1]; dy += gridSize)
+		for (let dy = gridSize; dy < World.size.value[1]; dy += gridSize)
 		{
-			let canvasPosA = this.camera.worldPosToCanvasPos(new Vector([
+			let canvasPosA = Renderer.camera.worldPosToCanvPos(new Vector(
 				0,
 				dy
-			]));
-			let canvasPosB = this.camera.worldPosToCanvasPos(new Vector([
-				PhysicsEngine.world.size.value[0],
+			));
+			let canvasPosB = Renderer.camera.worldPosToCanvPos(new Vector(
+				World.size.value[0],
 				dy
-			]));
+			));
 
 			ctx.beginPath();
 			ctx.moveTo(canvasPosA.value[0], canvasPosA.value[1]);

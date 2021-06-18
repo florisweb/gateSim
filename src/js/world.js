@@ -3,6 +3,17 @@ window.debugging = false;
 function _World() {
   this.size = new Vector(800, 600);
 
+  this.grid = new function() {
+    this.gridSize = 25;
+    this.snapToGrid = function(_position) {
+      return new Vector(
+        Math.round(_position.value[0] / this.gridSize) * this.gridSize,
+        Math.round(_position.value[1] / this.gridSize) * this.gridSize,
+      );
+    }
+  }
+
+
 
   this.setup = function() {
     window.onresize();

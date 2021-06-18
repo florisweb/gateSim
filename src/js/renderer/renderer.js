@@ -13,16 +13,16 @@ function _Renderer() {
 	
 	this.setup = function() {
 		this.update();
-	}	
+	}
 
 	this.update = function() {
 		this.drawLib.clearCanvas();
 		this.drawLib.drawBackground();
+		this.drawLib.drawWorldGrid();
 
 	
 		World.curComponent.draw();
 		if (Builder.curBuildLine) Builder.curBuildLine.draw();
-		// this.drawLib.drawWorldGrid();
 
 		requestAnimationFrame(function () {Renderer.update()});
 	}

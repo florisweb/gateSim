@@ -392,6 +392,9 @@ function DragComponent() {
 	this.drag = function(_delta) {
 		this.position.add(_delta.copy().scale(-1));
 	}
+	this.dragEnd = function() {
+		this.position = World.grid.snapToGrid(this.position);
+	}
 	Builder.register(this);
 }
 
