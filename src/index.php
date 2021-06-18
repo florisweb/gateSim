@@ -7,11 +7,15 @@
 
 		<link rel="stylesheet" type="text/css" href="main_min.css">
 	</head>	
-	<body>		
+	<body class='noselect'>		
 		<div id='sideBar'>
 			<div class='button bDefault bBoxy text' onclick='Builder.newChip()'>New Component</div>
-			<div id='componentHolder'></div>
 
+			<div class="header clickable">
+				<img src="images/icons/dropDownIcon.png" class="headerIcon dropDownButton close">
+				<div class="text headerText">My Components</div>
+			</div>
+			<div id='componentHolder'></div>
 		</div>
 		<div id='mainContent'>
 			<div class='header'>

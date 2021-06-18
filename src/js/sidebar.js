@@ -26,11 +26,12 @@ function _SideBar_componentList() {
 
   this.addComponent = function(_component) {
     let element = document.createElement('div');
-    element.classList.add('component');
+    element.className = 'component noselect';
 
     element.innerHTML =   "<div class='titleHolder text'></div>" + 
                           "<img class='icon optionIcon clickable' src='images/icons/optionIcon.png'>" + 
-                          "<canvas class='componentPreview'></canvas>";
+                          "<div class='text subText'>By: Floris</div>";
+                          // "<canvas class='componentPreview'></canvas>";
     
     setTextToElement(element.children[0], _component.name);
     element.addEventListener('click', function(_e) {
