@@ -8,6 +8,19 @@ function _HitBoxManager() {
     this.list.push(_hitBoxItem);
   }
 
+  this.clear = function() {
+    this.list = [];
+  }
+  this.unregister = function(_id) {
+    for (let i = this.list.length - 1; i >= 0; i--)
+    {
+      if (this.list[i].hitBoxId != _id) continue;
+      this.list.splice(i, 1);
+      return true;
+    }
+    return false;
+  }
+
 
   this.getItemByPosition = function(_position, _config = {mustBeClickable: false, mustBeDraggable: false}) {
     let minArea = Infinity;

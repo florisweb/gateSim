@@ -23,6 +23,7 @@ function _World() {
   }
 
   this.clear = function(inputCount = 2, outputCount = 2) {
+    HitBoxManager.clear();
     let inputs = [];
     let outputs = [];
     for (let i = 0; i < inputCount; i++) inputs.push({name: 'input ' + i});

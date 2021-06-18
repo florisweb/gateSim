@@ -76,9 +76,11 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 	this.componentId = componentId;
 
 	this.inputs = inputs.map(function (item, i) {
+		if (This.isWorldComponent) return new WorldInput(item, This, i);
 		return new InOutput(item, This, i, true);
 	});
 	this.outputs = outputs.map(function (item, i) {
+		if (This.isWorldComponent) return new WorldOutput(item, This, i);
 		return new InOutput(item, This, i, false);
 	});
 
@@ -90,7 +92,6 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 
 	BuildComponent.call(this);
-
 	this.fillColor = '#555';
 
 	this.draw = function() {
@@ -108,20 +109,6 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 		for (let input of this.inputs) input.draw();
 		for (let output of this.outputs) output.draw();
 		
-
-		// Renderer.drawInOutPutArray({
-		// 	position: position,
-		// 	items: this.inputs,
-		// 	availableHeight: this.size.value[1],
-		// 	isInputArray: true,
-		// });
-		// Renderer.drawInOutPutArray({
-		// 	position: position.copy().add(new Vector(this.size.value[0], 0)),
-		// 	items: this.outputs,
-		// 	availableHeight: this.size.value[1],
-		// 	isInputArray: false,
-		// });
-
 		Renderer.drawLib.drawCenteredText({
 			text: this.name,
 			position: this.getPosition().copy().add(this.size.copy().scale(.5)),
@@ -132,20 +119,6 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 		for (let component of this.content) component.draw();
 	}
-
-
-	// this.export = function() {
-	// 	let obj = {
-	// 		position: 		this.position.value, 
-	// 		name: 			this.name, 
-	// 		id: 			this.id, 
-	// 		componentId: 	this.componentId, 
-	// 		inputs: 		this.inputs.map(input => input.export()), 
-	// 		outputs: 		this.outputs.map(output => output.export()), 
-	// 		content: 		this.content.map(item => item.export()), 
-	// 	}
-	// 	return obj;
-	// }
 
 	this.export = function(_asReference = false) {
 		if (_asReference) 
@@ -190,16 +163,19 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 	}
 
 	this.remove = function() {
-		for (let item of this.content) item.remove();
+		for (let i = this.content.length - 1; i >= 0; i--) this.content[i].remove();
+		HitBoxManager.unregister(this.hitBoxId);
 		Builder.unregister(this.id);
 
 		for (let node of this.inputs) 
 		{
 			for (let i = node.toLines.length - 1; i >= 0; i--) node.toLines[i].remove();
+			node.remove();
 		}
 		for (let node of this.outputs) 
 		{
 			for (let i = node.fromLines.length - 1; i >= 0; i--) node.fromLines[i].remove();
+			node.remove();
 		}
 
 
@@ -327,6 +303,10 @@ function Node({turnedOn}) {
 
 		for (let line of this.fromLines) line.to.run(_index + 1, _fullRun)
 	}
+
+	this.remove = function() {
+		HitBoxManager.unregister(this.hitBoxId);
+	}
 }
 
 
@@ -371,92 +351,6 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 
 
 
-function BuildComponent() {
-	HitBoxComponent.call(this, {hitBox: this.size});
-	DragComponent.call(this);
-	ClickComponent.call(this);
-	this.selected = false;
-
-	this.onclick = function() {
-		this.selected = true;
-	}
-}
-
-function ClickComponent() {
-	this.clickable = true;
-	this.onclick = function() {console.warn('[!] You forgot to add an onclick-handler', this);}
-}
-
-function DragComponent() {
-	this.draggable = true;
-	this.drag = function(_delta) {
-		this.position.add(_delta.copy().scale(-1));
-	}
-	this.dragEnd = function() {
-		this.position = World.grid.snapToGrid(this.position);
-	}
-	Builder.register(this);
-}
-
-
-function HitBoxComponent({hitBox}) {
-	let HitBox = hitBox.copy();
-	this.area = HitBox.value[0] * HitBox.value[1];
-
-	this.isPointInside = function(_position) {
-		let delta = this.getPosition().difference(_position);
-		if (delta.value[0] > HitBox.value[0] || delta.value[0] < 0) return false;
-		if (delta.value[1] > HitBox.value[1] || delta.value[1] < 0) return false;
-
-		return true;
-	}
-
-	HitBoxManager.register(this);
-}
-
-function CircularHitBoxComponent({radius}) {
-	HitBoxComponent.call(this, {hitBox: new Vector(0, 0)});
-	let Radius = radius;
-	this.area = Math.PI * Math.pow(Radius, 2);
-	
-	this.isPointInside = function(_position) {
-		let delta = this.getPosition().difference(_position);
-		let distance = delta.getSquaredLength();
-		return distance < Math.pow(Radius, 2);
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function WorldInput({name, turnedOn}, _parent, _index) {
 	let This = this;
 	InOutput.call(this, {name, turnedOn}, _parent, _index, true);
@@ -473,6 +367,11 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 	this.draw = function() {
 		drawNode.call(this);
 		this.toggleButton.draw();
+	}
+
+	this.remove = function() {
+		HitBoxManager.unregister(this.hitBoxId);
+		HitBoxManager.unregister(this.toggleButton.hitBoxId);
 	}
 
 	this.toggleButton = new function() {
@@ -521,6 +420,7 @@ function WorldOutput({name, turnedOn}, _parent, _index) {
 
 function CurComponent({inputs, outputs, id}) {
 	let This = this;
+	this.isWorldComponent = true;
 	Component.call(this, { 
 		position: 		new Vector(0, 0), 
 		name: 			'', 
@@ -533,14 +433,6 @@ function CurComponent({inputs, outputs, id}) {
 	this.onclick = function() {};
 	
 	this.size = World.size;
-	this.inputs = inputs.map(function (item, i) {
-		return new WorldInput(item, This, i);
-	});
-	this.outputs = outputs.map(function (item, i) {
-		return new WorldOutput(item, This, i);
-	});
-
-
 	this.fillColor = 'rgba(0, 0, 0, 0)';
 }
 
@@ -556,4 +448,71 @@ function CurComponent({inputs, outputs, id}) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+function BuildComponent() {
+	HitBoxComponent.call(this, {hitBox: this.size});
+	DragComponent.call(this);
+	ClickComponent.call(this);
+	this.selected = false;
+
+	this.onclick = function() {
+		this.selected = true;
+	}
+}
+
+function ClickComponent() {
+	this.clickable = true;
+	this.onclick = function() {console.warn('[!] You forgot to add an onclick-handler', this);}
+}
+
+function DragComponent() {
+	this.draggable = true;
+	this.drag = function(_delta) {
+		this.position.add(_delta.copy().scale(-1));
+	}
+	this.dragEnd = function() {
+		this.position = World.grid.snapToGrid(this.position);
+	}
+	Builder.register(this);
+}
+
+
+function HitBoxComponent({hitBox}) {
+	let HitBox = hitBox.copy();
+	this.area = HitBox.value[0] * HitBox.value[1];
+	this.hitBoxId = Symbol();
+
+	this.isPointInside = function(_position) {
+		let delta = this.getPosition().difference(_position);
+		if (delta.value[0] > HitBox.value[0] || delta.value[0] < 0) return false;
+		if (delta.value[1] > HitBox.value[1] || delta.value[1] < 0) return false;
+
+		return true;
+	}
+
+	HitBoxManager.register(this);
+}
+
+function CircularHitBoxComponent({radius}) {
+	HitBoxComponent.call(this, {hitBox: new Vector(0, 0)});
+	let Radius = radius;
+	this.area = Math.PI * Math.pow(Radius, 2);
+	
+	this.isPointInside = function(_position) {
+		let delta = this.getPosition().difference(_position);
+		let distance = delta.getSquaredLength();
+		return distance < Math.pow(Radius, 2);
+	}
+}
 

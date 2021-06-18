@@ -134,7 +134,7 @@ function _Builder() {
   }
   
   this.onDragEnd = function() {
-    this.curDragItem.dragEnd();
+    if (this.curDragItem) this.curDragItem.dragEnd();
     this.curDragItem = false;
     this.dragging = false;
   }
