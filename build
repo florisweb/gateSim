@@ -13,7 +13,7 @@ cp -r images ../dist/images
 
 
 echo - Building Javascript
-cat js/extraFunctions.js js/vector.js js/components/component.js js/components/componentManager.js js/sideBar.js js/inputHandler.js js/renderer/drawLib.js js/renderer/camera.js js/renderer/renderer.js js/builder.js js/world.js js/app.js > ../dist/main_min.js
+cat js/extraFunctions.js js/vector.js js/hitBoxManager.js js/components/component.js js/components/componentManager.js js/sideBar.js js/inputHandler.js js/renderer/drawLib.js js/renderer/camera.js js/renderer/renderer.js js/builder.js js/world.js js/app.js > ../dist/main_min.js
 
 
 echo \|-------------------\|

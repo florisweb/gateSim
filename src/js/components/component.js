@@ -104,18 +104,23 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 			strokeColor: this.selected ? '#33f' : '#444'
 		});
 
-		Renderer.drawInOutPutArray({
-			position: position,
-			items: this.inputs,
-			availableHeight: this.size.value[1],
-			isInputArray: true,
-		});
-		Renderer.drawInOutPutArray({
-			position: position.copy().add(new Vector(this.size.value[0], 0)),
-			items: this.outputs,
-			availableHeight: this.size.value[1],
-			isInputArray: false,
-		});
+
+		for (let input of this.inputs) input.draw();
+		for (let output of this.outputs) output.draw();
+		
+
+		// Renderer.drawInOutPutArray({
+		// 	position: position,
+		// 	items: this.inputs,
+		// 	availableHeight: this.size.value[1],
+		// 	isInputArray: true,
+		// });
+		// Renderer.drawInOutPutArray({
+		// 	position: position.copy().add(new Vector(this.size.value[0], 0)),
+		// 	items: this.outputs,
+		// 	availableHeight: this.size.value[1],
+		// 	isInputArray: false,
+		// });
 
 		Renderer.drawLib.drawCenteredText({
 			text: this.name,
@@ -293,6 +298,15 @@ function LineComponent({from, to}) {
 
 
 function Node({turnedOn}) {
+	this.isNode = true;
+	this.getDepth = function() {
+		return this.parent.getDepth();
+	}
+	CircularHitBoxComponent.call(this, {radius: nodeRadius});
+	ClickComponent.call(this);
+	this.onclick = function() {};
+
+
 	this.id 		= Symbol();
 	this.turnedOn 	= turnedOn;
 	this.toLines 	= [];
@@ -312,15 +326,6 @@ function Node({turnedOn}) {
 		if (prevStatus == this.turnedOn && !_fullRun) return;
 
 		for (let line of this.fromLines) line.to.run(_index + 1, _fullRun)
-	}
-
-
-	this.onclick = function() {};
-
-	this.isPointInside = function(_position) {
-		let delta = this.getPosition().difference(_position);
-		let distance = delta.getSquaredLength();
-		return distance < Math.pow(nodeRadius, 2);
 	}
 }
 
@@ -345,6 +350,15 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 		}
 		return item;
 	}
+
+	this.draw = function() {
+		Renderer.drawInOutPut({
+			position: this.getPosition(),
+			name: this.name,
+			isInput: this.isInput,
+			turnedOn: this.turnedOn
+		});
+	}
 }
 
 
@@ -359,6 +373,7 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 
 function BuildComponent() {
 	DragComponent.call(this);
+	ClickComponent.call(this);
 	this.selected = false;
 
 	this.onclick = function() {
@@ -366,22 +381,14 @@ function BuildComponent() {
 	}
 }
 
-
+function ClickComponent() {
+	this.clickable = true;
+	this.onclick = function() {console.warn('[!] You forgot to add an onclick-handler', this);}
+}
 
 function DragComponent() {
+	HitBoxComponent.call(this, {hitBox: this.size});
 	this.draggable = true;
-
-	this.hitBox = this.size.copy();
-
-	this.isPointInside = function(_position) {
-		let delta = this.getPosition().difference(_position);
-		if (delta.value[0] > this.hitBox.value[0] || delta.value[0] < 0) return false;
-		if (delta.value[1] > this.hitBox.value[1] || delta.value[1] < 0) return false;
-
-		return true;
-	}
-
-
 	this.drag = function(_delta) {
 		this.position.add(_delta.copy().scale(-1));
 	}
@@ -389,6 +396,32 @@ function DragComponent() {
 }
 
 
+function HitBoxComponent({hitBox}) {
+	let HitBox = hitBox.copy();
+	this.area = HitBox.value[0] * HitBox.value[1];
+
+	this.isPointInside = function(_position) {
+		let delta = this.getPosition().difference(_position);
+		if (delta.value[0] > HitBox.value[0] || delta.value[0] < 0) return false;
+		if (delta.value[1] > HitBox.value[1] || delta.value[1] < 0) return false;
+
+		return true;
+	}
+
+	HitBoxManager.register(this);
+}
+
+function CircularHitBoxComponent({radius}) {
+	HitBoxComponent.call(this, {hitBox: new Vector(0, 0)});
+	let Radius = radius;
+	this.area = Math.PI * Math.pow(Radius, 2);
+	
+	this.isPointInside = function(_position) {
+		let delta = this.getPosition().difference(_position);
+		let distance = delta.getSquaredLength();
+		return distance < Math.pow(Radius, 2);
+	}
+}
 
 
 
@@ -422,24 +455,64 @@ function DragComponent() {
 
 
 function WorldInput({name, turnedOn}, _parent, _index) {
+	let This = this;
 	InOutput.call(this, {name, turnedOn}, _parent, _index, true);
 	this.isWorldInput = true;
 	this.setStatus = function(_status) {
 		this.turnedOn = _status;
 	}
-	this.onclick = function() {
-		this.setStatus(!this.turnedOn);
-		this.run();
-	}
 
 	this.run = function() {
 		for (let line of this.fromLines) line.to.run(1);
 	}
+
+	let drawNode = this.draw;
+	this.draw = function() {
+		drawNode.call(this);
+		this.toggleButton.draw();
+	}
+
+	this.toggleButton = new function() {
+		const width = 45;
+		const height = 20;
+		this.getDepth = function() {return 0;}
+
+		HitBoxComponent.call(this, {hitBox: new Vector(width, height)});
+		ClickComponent.call(this);
+
+		this.onclick = function() {
+			This.setStatus(!This.turnedOn);
+			This.run();
+		}
+		
+		this.getPosition = function() {
+			return This.getPosition().copy().add(new Vector(-width - nodeRadius - inOutPutMargin, -height / 2));
+		}
+
+		this.draw = function() {
+			let position = this.getPosition();
+			Renderer.drawLib.drawRect({
+				position: position,
+				diagonal: new Vector(width, height),
+				strokeColor: '#222',
+				fillColor: '#444'
+			});
+			Renderer.drawLib.drawText({
+				text: 'Toggle',
+				position: position.copy().add(new Vector(5, height * .7)),
+				color: '#ddd',
+				fontSize: 12
+			});
+		}
+	}
 }
+
+
+
 
 function WorldOutput({name, turnedOn}, _parent, _index) {
 	InOutput.call(this, {name, turnedOn}, _parent, _index, false);
-	this.isWorldInput = true;
+	this.isWorldOutput = true;
 }
 
 

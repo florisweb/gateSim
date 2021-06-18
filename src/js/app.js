@@ -1,6 +1,7 @@
 
 
 
+let HitBoxManager;
 let World;
 let Renderer;
 let InputHandler;
@@ -10,6 +11,7 @@ let SideBar;
 
 const App = new function() {
 	this.setup = function() {
+		HitBoxManager 		= new _HitBoxManager();
 		Builder 			= new _Builder();
 		ComponentManager 	= new _ComponentManager();
 		SideBar 			= new _SideBar();

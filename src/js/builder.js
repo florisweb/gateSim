@@ -53,17 +53,17 @@ function _Builder() {
 
   this.clickHandler = function(_position) {
     for (let item of this.list) item.selected = false;
-    let clickedNode = getInOutputByPosition(_position);
-    if (clickedNode) 
+
+    let clickedItem = HitBoxManager.getItemByPosition(_position, {mustBeClickable: true});
+    if (clickedItem.isNode) 
     {
-      clickedNode.onclick();
       if (this.curBuildLine)
       {
-        if (this.curBuildLine.from.id == clickedNode.id) return this.cancelBuildingLine();
-        if (clickedNode.isWorldInput && clickedNode.isInput) return;
-        if (!clickedNode.isWorldInput && !clickedNode.isInput) return;
+        if (this.curBuildLine.from.id == clickedItem.id) return this.cancelBuildingLine();
+        if (clickedItem.isWorldInput) return;
+        if (!clickedItem.isWorldOutput && !clickedItem.isInput) return;
 
-        this.curBuildLine.to = clickedNode;
+        this.curBuildLine.to = clickedItem;
         World.curComponent.addComponent(this.curBuildLine);
         this.curBuildLine.to.run(0);
 
@@ -71,18 +71,17 @@ function _Builder() {
         return;
       }
 
-      if (clickedNode.isWorldInput && !clickedNode.isInput) return;
-      if (!clickedNode.isWorldInput && clickedNode.isInput) return;
+      if (clickedItem.isWorldOutput) return;
+      if (!clickedItem.isWorldInput && clickedItem.isInput) return;
 
       this.curBuildLine = new LineComponent({
-        from: clickedNode,
+        from: clickedItem,
         to: mouseNode,
       });
 
       return;
     } 
 
-    let clickedItem = getItemByPosition(_position);
     this.curSelectedItem = false;
     if (!clickedItem) return;
     this.curSelectedItem = clickedItem;
@@ -90,25 +89,7 @@ function _Builder() {
   }
 
 
-  function getItemByPosition(_position) {
-    let minSize = Infinity;
-    let clickedItem = false;
-    for (let item of Builder.list)
-    {
-      if (item.getDepth() > Renderer.maxRenderDepth) continue;
 
-      let clicked = item.isPointInside(_position);
-      if (!clicked) continue;
-
-      let size = item.hitBox.value[0] * item.hitBox.value[1];
-      if (size > minSize) continue;
-      
-      minSize = size;
-      clickedItem = item;
-    }
-
-    return clickedItem;
-  }
 
 
   function getInOutputByPosition(_position) {
@@ -128,9 +109,8 @@ function _Builder() {
   }
 
 
-
   this.onDragStart = function(_position) {
-    let item = getItemByPosition(_position);
+    let item = HitBoxManager.getItemByPosition(_position);
     if (!item || !item.draggable) return;
     this.curDragItem = item;
     this.dragging = true;
