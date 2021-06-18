@@ -298,7 +298,8 @@ function Node({turnedOn}) {
 	this.toLines 	= [];
 	this.fromLines 	= [];
 
-	this.run = function(_index) {
+	this.run = function(_index, _fullRun = false) {
+		let prevStatus = this.turnedOn;
 		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -306,9 +307,11 @@ function Node({turnedOn}) {
 			this.turnedOn = true;
 			break;
 		}
-		
+
 		if (debugging) console.log(_index, 'Run node status: ' + this.turnedOn);
-		for (let line of this.fromLines) line.to.run(_index + 1)
+		if (prevStatus == this.turnedOn && !_fullRun) return;
+
+		for (let line of this.fromLines) line.to.run(_index + 1, _fullRun)
 	}
 
 

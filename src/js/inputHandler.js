@@ -171,7 +171,6 @@ function _KeyHandler() {
 
   this.handleKeys = function(_event) {
 		let inInputField = _event.target.type == "text" || _event.target.type == "textarea" ? true : false;
-		console.log(_event.key);
 
 		for (let i = 0; i < shortCuts.length; i++)
 		{

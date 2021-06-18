@@ -33,10 +33,9 @@ function _World() {
 
 
   this.run = function() {
-    console.log('run');
     for (let input of this.curComponent.inputs)
     {
-      input.run(0);
+      input.run(0, false);
     }
   }
 
