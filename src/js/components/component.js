@@ -90,7 +90,11 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 	this.size = new Vector(0, 0);
 	let maxPorts = this.inputs.length > this.outputs.length ? this.inputs.length : this.outputs.length;
-	this.size = new Vector(100, maxPorts * 40);
+	this.size = new Vector(
+		100, 
+		maxPorts * (nodeRadius + inOutPutMargin) * 2 + 5 * 2
+	);
+	
 
 
 	BuildComponent.call(this);
