@@ -8,6 +8,7 @@ let InputHandler;
 let Builder;
 let ComponentManager;
 let SideBar;
+let Popup;
 
 const App = new function() {
 	this.setup = function() {
@@ -19,6 +20,7 @@ const App = new function() {
   		World 				= new _World();
   		Renderer 			= new _Renderer();
   		InputHandler 		= new _InputHandler({canvas: worldCanvas});
+  		Popup 				= new _Popup();
 
   		World.setup();
 

@@ -33,6 +33,20 @@ function isDescendant(parent, child) {
 }
 
 
+function setImageSource(_image, _html) {
+  let element = document.createElement("img");
+  if (typeof _image == "string")
+  {
+    element.classList.add('optionIcon');
+    element.setAttribute("src", _image);
+  } else {
+    element = _image;
+  }
+  _html.insertBefore(element, _html.firstChild);
+}
+
+
+
 
 Array.prototype.randomItem = function() {
   return this[Math.round((this.length - 1) * Math.random())];
