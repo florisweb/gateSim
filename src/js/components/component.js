@@ -319,6 +319,19 @@ function Node({turnedOn}) {
 
 	this.remove = function() {
 		HitBoxManager.unregister(this.hitBoxId);
+		for (let i = this.fromLines.length - 1; i >= 0; i--) this.fromLines[i].remove();
+		for (let i = this.toLines.length - 1; i >= 0; i--) this.toLines[i].remove();
+
+		let list = this.isInput ? this.parent.inputs : this.parent.outputs;
+		for (let i = 0; i < list.length; i++)
+		{
+			if (list[i].id != this.id) continue;
+			list.splice(i, 1);
+			console.log('remove');
+			break;
+		}
+		for (let i = 0; i < list.length; i++) list[i].index = i;
+
 	}
 }
 
@@ -387,8 +400,9 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 		this.toggleButton.enableHitBox();
 	}
 
+	let remove = this.remove;
 	this.remove = function() {
-		HitBoxManager.unregister(this.hitBoxId);
+		remove.call(this);
 		HitBoxManager.unregister(this.toggleButton.hitBoxId);
 	}
 
@@ -464,7 +478,12 @@ function CurComponent({inputs, outputs, id}) {
 		this.verticalSizeChanger.draw();
 		this.horizontalSizeChanger.draw();
 		draw.call(this);
+		this.inputNodeEditorButton.draw();
+		this.outputNodeEditorButton.draw();
 	}
+
+	this.inputNodeEditorButton = new CurComponent_NodeEditorButton({isInput: true, parent: this})
+	this.outputNodeEditorButton = new CurComponent_NodeEditorButton({isInput: false, parent: this})
 
 
 	this.verticalSizeChanger = new CurComponent_VerticalSizeChanger(this, actualThickness, visualThickness);
@@ -474,7 +493,54 @@ function CurComponent({inputs, outputs, id}) {
 	this.activate();
 	this.verticalSizeChanger.enableHitBox();
 	this.horizontalSizeChanger.enableHitBox();
+	this.inputNodeEditorButton.enableHitBox();
+	this.outputNodeEditorButton.enableHitBox();
 }
+
+
+function CurComponent_NodeEditorButton({isInput = true, parent}) {
+	this.parent = parent;
+	this.isInput = isInput;
+
+	this.getDepth = function() {return 0;}
+
+	const radius = nodeRadius;
+
+	CircularHitBoxComponent.call(this, {radius: radius});
+	ClickComponent.call(this);
+
+	this.onclick = function() {
+		Popup.nodeManager.open(this.isInput);
+	}
+
+	const heightPerNode = nodeRadius * 2 + inOutPutMargin * 2;
+	this.getPosition = function() {
+		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
+
+		let y = this.parent.size.value[1] / 2 - (items.length / 2 - items.length + 1 - .5) * heightPerNode;
+		return this.parent.getPosition().copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y + heightPerNode));
+	}
+
+	this.draw = function() {
+		let position = this.getPosition();
+		Renderer.drawLib.ctx.lineWidth = 3;
+		Renderer.drawLib.drawCircle({
+			position: position,
+			radius: radius,
+			fillColor: '#474',
+			strokeColor: '#030'
+		});
+		Renderer.drawLib.ctx.lineWidth = 1;
+
+		Renderer.drawLib.drawCenteredText({
+			text: '+',
+			position: position,
+			color: '#0f0',
+			fontSize: 20
+		});
+	}
+}
+
 
 
 function CurComponent_VerticalSizeChanger(_worldComponent, actualThickness, visualThickness) {

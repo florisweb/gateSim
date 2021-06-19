@@ -215,3 +215,31 @@ function binaryToNumber(_binaryString) {
   }
   return sum;
 }
+
+
+
+function countNandGatesAndLines(_obj) {
+  let lines = 0;
+  let nandGates = 0;
+  for (let component of _obj.content)
+  {
+    if (component.type == 'line')
+    {
+      lines++;
+      continue;
+    }
+    if (component.componentId == 'nandgate')
+    {
+      nandGates++;
+      continue;
+    }
+    let result = countNandGatesAndLines(component);
+    lines += result.lines;
+    nandGates += result.nandGates;
+  } 
+
+  return {
+    lines: lines,
+    nandGates: nandGates
+  }
+}

@@ -14,7 +14,7 @@ function _Popup() {
 function _Popup_nodeManager() {
   let This = this;
 
-  let inputList = new ItemList();
+  let inputList = new InputList();
   PopupComponent.call(this, {
     content: [
       inputList,
@@ -66,9 +66,13 @@ function _Popup_nodeManager() {
     {
       inputList.addItem({
         title: input.name,
-        icon: 'images/icons/addIcon.png',
+        index: input.index,
         value: input,
-        onclick: function() {console.log('click');}
+        onclick: function() {
+          let nodes = setInputs ? World.curComponent.inputs : World.curComponent.outputs;
+          nodes[input.index].remove();
+          setNodeList();
+        }
       });
     }
 

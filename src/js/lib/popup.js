@@ -288,6 +288,78 @@ function ItemList() {
 
 
 
+function InputList() {
+	let This = this;
+	this.HTML;
+	this.items = [];
+
+	this.removeAllItems = function() {
+		this.HTML.innerHTML = "";
+		this.items = [];
+	}
+
+	this.createHTML = function() {
+		this.HTML = document.createElement("div");
+		this.HTML.className = "itemListHolder inputList";
+
+		return this.HTML;
+	}
+
+	this.addItem = function() {
+		let item = new Item(...arguments);
+		this.items.push(item);
+		return item;
+	}
+
+
+
+
+
+	function Item({index, title, value, onclick = false}) {
+		let Self = this;
+		this.HTML = createHTML();
+		this.title = title;
+		this.value = value;
+
+		function createHTML() {
+			let HTML = {};
+			HTML.item = document.createElement("div");
+			HTML.item.className = "UI listItem clickable";
+
+			HTML.item.innerHTML += 	"<div class='text indexHolder'></div>" + 
+									"<input class='text'>" + 
+									"<div class='rightHand clickable'></div>";
+			HTML.titleHolder = HTML.item.children[1];
+			HTML.titleHolder.value = title;
+
+			setTextToElement(HTML.item.children[0], index);
+
+	
+			if (onclick)
+			{
+				HTML.optionIcon = document.createElement("img");
+				HTML.optionIcon.setAttribute("src", "images/icons/removeIcon.png");
+				HTML.optionIcon.className = 'item optionIcon onlyShowOnItemHover clickable';
+
+				HTML.item.children[2].append(HTML.optionIcon);
+
+				// DoubleClick.register(HTML.item, function (e) {
+				// 	onclick(Self, e, true);
+				// });
+
+				HTML.item.children[2].onclick = function(e) {
+					onclick(Self, e, false);
+				}
+			}
+
+			This.HTML.append(HTML.item);
+			return HTML;
+		}
+	}
+}
+
+
+
 
 
 
