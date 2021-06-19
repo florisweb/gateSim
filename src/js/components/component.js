@@ -91,8 +91,9 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 	this.size = new Vector(0, 0);
 	let maxPorts = this.inputs.length > this.outputs.length ? this.inputs.length : this.outputs.length;
 	const margin = 5;
+	let width = Renderer.drawLib.getTextBoundingBox({text: this.name, fontSize: 15}).value[0] + 2 * (margin + nodeRadius + inOutPutMargin);
 	this.size = new Vector(
-		Renderer.drawLib.getTextBoundingBox({text: this.name, fontSize: 15}).value[0] + 2 * (margin + nodeRadius + inOutPutMargin), 
+		width > 250 ? 250 : width,
 		maxPorts * (nodeRadius + inOutPutMargin) * 2 + margin * 2
 	);
 

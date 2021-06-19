@@ -15,7 +15,7 @@
 				<img src="images/icons/dropDownIcon.png" class="headerIcon dropDownButton close">
 				<div class="text headerText">My Components</div>
 			</div>
-			<div id='componentHolder'></div>
+			<div class='componentHolder'></div>
 		</div>
 		<div id='mainContent'>
 			<div class='header'>
