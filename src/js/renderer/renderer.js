@@ -22,7 +22,7 @@ function _Renderer() {
 
 	
 		World.curComponent.draw();
-		if (Builder.curBuildLine) Builder.curBuildLine.draw();
+		for (let line of Builder.curBuildLines) line.draw();
 
 		requestAnimationFrame(function () {Renderer.update()});
 	}

@@ -77,7 +77,7 @@ function _InputHandler({canvas}) {
 			);
 
 			let worldPosition = Renderer.camera.canvPosToWorldPos(mousePosition);
-			Builder.clickHandler(worldPosition);
+			Builder.clickHandler(worldPosition, _e);
 		});
 
 

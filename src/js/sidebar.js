@@ -9,7 +9,7 @@ function _SideBar() {
 
 function _SideBar_componentList() {
   let HTML = {
-    componentHolder: componentHolder
+    componentHolder: $('#sideBar .componentHolder')[0]
   }
 
   this.setup = function() {

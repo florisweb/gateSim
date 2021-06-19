@@ -7,15 +7,17 @@ function _Builder() {
   this.list = [];
   this.dragging = false;
   this.curDragItem = false;
-  this.curBuildLine = false;
+  this.curBuildLines = [];
   this.curSelectedItem = false;
 
   let mousePosition = new Vector(0, 0);
-  let mouseNode = {
-    getPosition: function() {
-      return mousePosition;
-    },
-    parent: {
+
+  function MouseNode(_relativeIndex) {
+    this.relativeIndex = _relativeIndex;
+    this.getPosition = function() {
+      return mousePosition.copy().add(new Vector(0, this.relativeIndex * (nodeRadius + inOutPutMargin) * 2));
+    }
+    this.parent = {
       getDepth: function() {
         return 0;
       }
@@ -46,50 +48,100 @@ function _Builder() {
 
 
   this.cancelBuildingLine = function() {
-    this.curBuildLine = false;
+    this.curBuildLines = [];
   }
 
 
 
-  this.clickHandler = function(_position) {
+  this.addBuildLine = function({from, relativeIndex = 0}) {
+    let line = new LineComponent({
+      from: from,
+      to: new MouseNode(relativeIndex),
+    });
+    line.relativeIndex = relativeIndex;
+    this.curBuildLines.push(line);
+  }
+
+
+
+  this.clickHandler = function(_position, _event) {
     for (let item of this.list) item.selected = false;
 
     let clickedItem = HitBoxManager.getItemByPosition(_position, {mustBeClickable: true});
     if (clickedItem.isNode) 
     {
-      if (this.curBuildLine)
+      if (this.curBuildLines.length)
       {
-        if (this.curBuildLine.from.id == clickedItem.id) return this.cancelBuildingLine();
-        if (clickedItem.isWorldInput) return;
-        if (!clickedItem.isWorldOutput && !clickedItem.isInput) return;
-
-        this.curBuildLine.to = clickedItem;
-
-
-        // Check if this line already exists, if so remove it.
-        for (let line of this.curBuildLine.from.fromLines)
+        // === MultipleLineAdder ===
+        if (_event.shiftKey)
         {
-          if (line.to.index != this.curBuildLine.to.index || line.to.parent.id != this.curBuildLine.to.parent.id) continue;
-          line.remove();
-          this.curBuildLine = false;
+          if (clickedItem.parent.id != this.curBuildLines[0].from.parent.id) return;
+          if (clickedItem.index == this.curBuildLines[0].from.index) return this.cancelBuildingLine();
+          
+          let deltaIndex = clickedItem.index - this.curBuildLines[0].from.index;
+          let isNegative = deltaIndex < 0;
+          deltaIndex = Math.abs(deltaIndex);
+
+          let outputs = this.curBuildLines[0].from.isWorldInput ? this.curBuildLines[0].from.parent.inputs : this.curBuildLines[0].from.parent.outputs;
+          for (let i = 1; i < deltaIndex + 1; i++)
+          {
+            let dIndex = i * (1 - isNegative);
+            let index = this.curBuildLines[0].from.index + dIndex;
+            
+            if (!outputs[index]) continue;
+            this.addBuildLine({
+              from: outputs[index],
+              relativeIndex: dIndex
+            });
+          }
+
           return;
         }
 
-        World.curComponent.addComponent(this.curBuildLine);
-        this.curBuildLine.to.run(0);
 
-        this.curBuildLine = false;
+
+        // === Finish lines ===
+        if (this.curBuildLines[0].from.id == clickedItem.id) return this.cancelBuildingLine();
+        if (clickedItem.isWorldInput) return;
+        if (!clickedItem.isWorldOutput && !clickedItem.isInput) return;
+
+        let startIndex = clickedItem.index;
+        let inputs = clickedItem.isWorldOutput ? clickedItem.parent.outputs : clickedItem.parent.inputs;
+
+        for (let i = 0; i < this.curBuildLines.length; i++)
+        {
+          let index = startIndex + this.curBuildLines[i].relativeIndex;
+          if (!inputs[index]) continue;
+          this.curBuildLines[i].to = inputs[index];
+
+          // Check if this line already exists, if so remove it.
+          let removedLine = false;
+          for (let line of this.curBuildLines[i].from.fromLines)
+          {
+            if (line.to.index != index || line.to.parent.id != this.curBuildLines[i].to.parent.id) continue;
+            line.remove();
+            removedLine = true;
+            break;
+          }
+
+          if (removedLine) continue;
+
+          World.curComponent.addComponent(this.curBuildLines[i]);
+          this.curBuildLines[i].to.run(0);
+        }
+
+        this.curBuildLines = [];
         return;
       }
 
+      // === Add the first line ===
       if (clickedItem.isWorldOutput) return;
       if (!clickedItem.isWorldInput && clickedItem.isInput) return;
-
-      this.curBuildLine = new LineComponent({
+      
+      this.addBuildLine({
         from: clickedItem,
-        to: mouseNode,
+        relativeIndex: 0
       });
-
       return;
     } 
 
