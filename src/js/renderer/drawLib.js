@@ -37,27 +37,20 @@ function Renderer_DrawLib({canvas}) {
 
 
 	this.drawCenteredText = function({text, position, fontSize, color}) {
-		let size = this.getTextBoundingBox({text: text, fontSize: fontSize});
-
-		let newPosition = position.copy().add(size.copy().scale(-.5));
-		this.drawText({
-			text: text,
-			position: newPosition,
-			fontSize: fontSize,
-			color: color
-		});
-		this.drawRect({
-			position: newPosition,
-			diagonal: size,
-			strokeColor: "#0f0",
-		})
-	}	
+		ctx.textAlign 		= 'center';
+		this.drawText(...arguments);
+		ctx.textAlign 		= 'start';
+		// ctx.textBaseline 	= 'alphabetic';
+	}
 
 
-	this.drawText = function({text, position, fontSize, color}) {
+	this.drawText = function({text, position, fontSize, color, alignRight = false}) {
+		ctx.textBaseline = 'middle';
+		if (alignRight) ctx.textAlign = 'end';
+
 		let canvPos = Renderer.camera.worldPosToCanvPos(position);
 		ctx.fillStyle = color;
-		ctx.font = (fontSize / Renderer.camera.zoom) + "px Georgia";
+		ctx.font = (fontSize / Renderer.camera.zoom) + "px Arial";
 		ctx.beginPath();
 
 		ctx.fillText(text, canvPos.value[0], canvPos.value[1]);
@@ -66,7 +59,7 @@ function Renderer_DrawLib({canvas}) {
 	}
 
 	this.getTextBoundingBox = function({text, fontSize}) {
-		ctx.font = (fontSize / Renderer.camera.zoom) + "px Georgia";
+		ctx.font = (fontSize / Renderer.camera.zoom) + "px Arial";
 		let size = ctx.measureText(text);
 		return new Vector(
 			size.width, 

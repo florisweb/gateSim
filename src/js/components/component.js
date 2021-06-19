@@ -107,17 +107,15 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 			strokeColor: this.selected ? '#33f' : '#444'
 		});
 
-
 		for (let input of this.inputs) input.draw();
 		for (let output of this.outputs) output.draw();
-		
+			
 		Renderer.drawLib.drawCenteredText({
 			text: this.name,
 			position: this.getPosition().copy().add(this.size.copy().scale(.5)),
 			fontSize: 15,
 			color: '#fff'
-		})
-
+		});
 
 		for (let component of this.content) component.draw();
 	}

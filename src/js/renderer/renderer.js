@@ -29,28 +29,16 @@ function _Renderer() {
 
 
 
-	this.drawInOutPutArray = function({position, items, availableHeight, isInputArray = true}) {
-		for (let i = 0; i < items.length; i++)
-		{
-			let y = availableHeight / 2 - (items.length / 2 - i - .5) * (nodeRadius * 2 + inOutPutMargin * 2);
-			this.drawInOutPut({
-				position: position.copy().add(new Vector(0, y)),
-				name: items[i].name,
-				isInput: isInputArray,
-				turnedOn: items[i].turnedOn,
-			});
-		}
-	}
-
 
 	this.drawInOutPut = function({position, name, turnedOn = false, isInput = true}) {
 		let fillColor = turnedOn ? "#f00" : "#888";
-		// this.drawLib.drawText({
-		// 	text: name,
-		// 	fontSize: 13,
-		// 	position: position.copy().add(new Vector(nodeRadius + 5, 3)),
-		// 	color: '#eee'
-		// });
+		this.drawLib.drawText({
+			text: name,
+			fontSize: 7,
+			position: position.copy().add(new Vector((nodeRadius + 2) * (-1 + 2 * isInput), 0)),
+			color: '#888',
+			alignRight: !isInput
+		});
 
 
 		this.drawLib.ctx.lineWidth = 3;
