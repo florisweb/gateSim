@@ -90,11 +90,12 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 	this.size = new Vector(0, 0);
 	let maxPorts = this.inputs.length > this.outputs.length ? this.inputs.length : this.outputs.length;
+	const margin = 5;
 	this.size = new Vector(
-		100, 
-		maxPorts * (nodeRadius + inOutPutMargin) * 2 + 5 * 2
+		Renderer.drawLib.getTextBoundingBox({text: this.name, fontSize: 15}).value[0] + 2 * (margin + nodeRadius + inOutPutMargin), 
+		maxPorts * (nodeRadius + inOutPutMargin) * 2 + margin * 2
 	);
-	
+
 
 
 	BuildComponent.call(this);
