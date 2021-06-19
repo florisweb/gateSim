@@ -27,7 +27,7 @@
 
 	.popupHolder .popup {
 		position: relative;
-		top: 45vh;
+		top: 50vh;
 		transform: translateY(-50%);
 		margin: auto;
 
@@ -232,9 +232,9 @@
 
 
 
-
-
-.itemListHolder.inputList {
+.popup .itemListHolder {
+	max-height: calc(100vh - 200px);
+	overflow: auto;
 }
 
 

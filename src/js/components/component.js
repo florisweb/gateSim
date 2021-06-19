@@ -18,7 +18,6 @@ function NandGateComponent({position, id}) {
 			this.turnedOn = true;
 			break;
 		}
-
   		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
   		for (let line of this.parent.outputs[0].fromLines) line.to.run(_index + 1);
   	};
@@ -170,22 +169,13 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 		return false;
 	}
 
-	this.remove = function() {
-		for (let i = this.content.length - 1; i >= 0; i--) this.content[i].remove();
+	this.remove = function(_removeDepth = 0) {
+		for (let i = this.content.length - 1; i >= 0; i--) this.content[i].remove(_removeDepth + 1);
 		HitBoxManager.unregister(this.hitBoxId);
 		Builder.unregister(this.id);
 
-		for (let node of this.inputs) 
-		{
-			for (let i = node.toLines.length - 1; i >= 0; i--) node.toLines[i].remove();
-			node.remove();
-		}
-		for (let node of this.outputs) 
-		{
-			for (let i = node.fromLines.length - 1; i >= 0; i--) node.fromLines[i].remove();
-			node.remove();
-		}
-
+		for (let i = this.inputs.length - 1; i >= 0; i--) this.inputs[i].remove(_removeDepth);
+		for (let i = this.outputs.length - 1; i >= 0; i--) this.outputs[i].remove(_removeDepth);
 
 		for (let i = 0; i < this.parent.content.length; i++)
 		{
@@ -220,7 +210,7 @@ function LineComponent({from, to}) {
 		if (this.to) this.to.toLines.push(this);
 	}
 
-	this.remove = function() {
+	this.remove = function(_removeDepth = 0) {
 		for (let i = 0; i < this.parent.content.length; i++)
 		{
 			if (this.parent.content[i].id != this.id) continue;
@@ -238,7 +228,7 @@ function LineComponent({from, to}) {
 			this.from.fromLines.splice(i, 1);
 		}
 
-		this.to.run();
+		if (_removeDepth == 0) this.to.run();
 	}
 
 
@@ -306,7 +296,6 @@ function Node({turnedOn}) {
 			break;
 		}
 
-		if (debugging) console.log(_index, 'Run node status: ' + this.turnedOn);
 		if (prevStatus == this.turnedOn && !_fullRun) return;
 
 		if (window.instantRun)
@@ -317,10 +306,10 @@ function Node({turnedOn}) {
 		}
 	}
 
-	this.remove = function() {
+	this.remove = function(_removeDepth = 0) {
 		HitBoxManager.unregister(this.hitBoxId);
-		for (let i = this.fromLines.length - 1; i >= 0; i--) this.fromLines[i].remove();
-		for (let i = this.toLines.length - 1; i >= 0; i--) this.toLines[i].remove();
+		for (let i = this.fromLines.length - 1; i >= 0; i--) this.fromLines[i].remove(_removeDepth);
+		for (let i = this.toLines.length - 1; i >= 0; i--) this.toLines[i].remove(_removeDepth);
 
 		let list = this.isInput ? this.parent.inputs : this.parent.outputs;
 		for (let i = 0; i < list.length; i++)

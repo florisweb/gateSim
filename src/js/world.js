@@ -1,4 +1,3 @@
-window.debugging = false;
 
 function _World() {
   this.size = new Vector(800, 600);
