@@ -327,7 +327,6 @@ function Node({turnedOn}) {
 		{
 			if (list[i].id != this.id) continue;
 			list.splice(i, 1);
-			console.log('remove');
 			break;
 		}
 		for (let i = 0; i < list.length; i++) list[i].index = i;

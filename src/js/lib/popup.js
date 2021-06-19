@@ -320,6 +320,9 @@ function InputList() {
 		this.HTML = createHTML();
 		this.title = title;
 		this.value = value;
+		this.getValue = function() {
+			return this.HTML.inputField.value;
+		}
 
 		function createHTML() {
 			let HTML = {};
@@ -329,10 +332,10 @@ function InputList() {
 			HTML.item.innerHTML += 	"<div class='text indexHolder'></div>" + 
 									"<input class='text'>" + 
 									"<div class='rightHand clickable'></div>";
-			HTML.titleHolder = HTML.item.children[1];
-			HTML.titleHolder.value = title;
-
-			setTextToElement(HTML.item.children[0], index);
+			HTML.titleHolder = HTML.item.children[0];
+			HTML.inputField = HTML.item.children[1];
+			HTML.inputField.value = title;
+			setTextToElement(HTML.titleHolder, index);
 
 	
 			if (onclick)
@@ -342,10 +345,6 @@ function InputList() {
 				HTML.optionIcon.className = 'item optionIcon onlyShowOnItemHover clickable';
 
 				HTML.item.children[2].append(HTML.optionIcon);
-
-				// DoubleClick.register(HTML.item, function (e) {
-				// 	onclick(Self, e, true);
-				// });
 
 				HTML.item.children[2].onclick = function(e) {
 					onclick(Self, e, false);

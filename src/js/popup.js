@@ -21,15 +21,7 @@ function _Popup_nodeManager() {
       new Button({
         title: '+ Add Input',
         floatLeft: true,
-        onclick: function() {
-          let input = new WorldInput({
-            name: 'test',
-          }, World.curComponent, World.curComponent.inputs.length);
-          World.curComponent.inputs.push(input);
-          input.enableHitBox();
-
-          setNodeList();
-        }
+        onclick: addNode
       }),
       new VerticalSpace({height: 50}),
 
@@ -75,11 +67,28 @@ function _Popup_nodeManager() {
         }
       });
     }
+  }
+  function addNode() {
+    let node;
+    if (setInputs)
+    {
+      node = new WorldInput({name: ''}, World.curComponent, World.curComponent.inputs.length);
+      World.curComponent.inputs.push(node);
+    } else {
+      node = new WorldOutput({name: ''}, World.curComponent, World.curComponent.outputs.length);
+      World.curComponent.outputs.push(node);
+    }
 
+    node.enableHitBox();
+    setNodeList();
   }
 
 
   this.saveNodeConfig = function() {
+    for (let item of inputList.items)
+    {
+      item.value.name = item.getValue();
+    }
 
     this.close();
   }
