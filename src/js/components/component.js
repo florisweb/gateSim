@@ -453,8 +453,87 @@ function CurComponent({inputs, outputs, id}) {
 	this.size = World.size;
 	this.fillColor = 'rgba(0, 0, 0, 0)';
 
+
+	let draw = this.draw;
+	const actualThickness = 100;
+	const visualThickness = 5;
+	this.draw = function() {
+		this.verticalSizeChanger.size = new Vector(World.size.value[0] + visualThickness, actualThickness);
+		this.horizontalSizeChanger.size = new Vector(actualThickness, World.size.value[1] + visualThickness);
+
+		this.verticalSizeChanger.draw();
+		this.horizontalSizeChanger.draw();
+		draw.call(this);
+	}
+
+
+	this.verticalSizeChanger = new CurComponent_VerticalSizeChanger(this, actualThickness, visualThickness);
+	this.horizontalSizeChanger = new CurComponent_HorizontalSizeChanger(this, actualThickness, visualThickness);
+
+
 	this.activate();
+	this.verticalSizeChanger.enableHitBox();
+	this.horizontalSizeChanger.enableHitBox();
 }
+
+
+function CurComponent_VerticalSizeChanger(_worldComponent, actualThickness, visualThickness) {
+	let This = _worldComponent;
+	
+	this.size = new Vector(World.size.value[0], actualThickness);
+	this.getDepth = function() {return 0;}
+	this.getPosition = function() {
+		return new Vector(0, This.getPosition().value[1] + This.size.value[1]);
+	}
+	HitBoxComponent.call(this, {hitBox: this.size});
+	DragComponent.call(this);
+
+	this.draw = function() {
+		Renderer.drawLib.drawRect({
+			position: new Vector(0, this.getPosition().value[1]),
+			diagonal: new Vector(this.size.value[0], visualThickness),
+			fillColor: '#555'
+		})
+	};
+
+
+	this.drag = function(_delta) {
+		This.size.add(_delta.copy().scale(-1));
+	}
+	this.dragEnd = function() {
+		This.size = World.grid.snapToGrid(This.size);
+		World.size = This.size;
+	}
+}
+
+function CurComponent_HorizontalSizeChanger(_worldComponent, actualThickness, visualThickness) {
+	let This = _worldComponent;
+
+	this.size = new Vector(actualThickness, World.size.value[1]);
+	this.getDepth = function() {return 0;}
+	this.getPosition = function() {
+		return new Vector(This.getPosition().value[0] + This.size.value[0], 0);
+	}
+	HitBoxComponent.call(this, {hitBox: this.size});
+	DragComponent.call(this);
+
+	this.draw = function() {
+		Renderer.drawLib.drawRect({
+			position: new Vector(this.getPosition().value[0], 0),
+			diagonal: new Vector(visualThickness, this.size.value[1]),
+			fillColor: '#555'
+		})
+	};
+
+	this.drag = function(_delta) {
+		This.size.add(_delta.copy().scale(-1));
+	}
+	this.dragEnd = function() {
+		This.size = World.grid.snapToGrid(This.size);
+		World.size = This.size;
+	}
+}
+
 
 
 

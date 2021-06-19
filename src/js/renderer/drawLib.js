@@ -24,13 +24,54 @@ function Renderer_DrawLib({canvas}) {
 	}
 
 	this.drawBackground = function() {
-		ctx.fillStyle = '#555';
+		ctx.fillStyle = '#444';
 		ctx.fillRect(0, 0, HTML.canvas.width, HTML.canvas.height);
 		this.drawRect({
 			position: new Vector(0, 0),
 			diagonal: World.size,
 			fillColor: '#333'
 		})
+	}
+
+	this.drawWorldGrid = function() {
+		const gridSize = World.grid.gridSize;// * Math.ceil(Renderer.camera.zoom);
+		ctx.strokeStyle = "#444";
+		
+		for (let dx = gridSize; dx < World.size.value[0]; dx += gridSize)
+		{
+			let canvasPosA = Renderer.camera.worldPosToCanvPos(new Vector(
+				dx, 
+				0
+			));
+			let canvasPosB = Renderer.camera.worldPosToCanvPos(new Vector(
+				dx, 
+				World.size.value[1]
+			));
+
+			ctx.beginPath();
+			ctx.moveTo(canvasPosA.value[0], canvasPosA.value[1]);
+			ctx.lineTo(canvasPosB.value[0], canvasPosB.value[1]);
+			ctx.closePath();
+			ctx.stroke();
+		}
+
+		for (let dy = gridSize; dy < World.size.value[1]; dy += gridSize)
+		{
+			let canvasPosA = Renderer.camera.worldPosToCanvPos(new Vector(
+				0,
+				dy
+			));
+			let canvasPosB = Renderer.camera.worldPosToCanvPos(new Vector(
+				World.size.value[0],
+				dy
+			));
+
+			ctx.beginPath();
+			ctx.moveTo(canvasPosA.value[0], canvasPosA.value[1]);
+			ctx.lineTo(canvasPosB.value[0], canvasPosB.value[1]);
+			ctx.closePath();
+			ctx.stroke();
+		}
 	}
 
 
@@ -129,46 +170,7 @@ function Renderer_DrawLib({canvas}) {
 		ctx.stroke();
 	}
 
-	this.drawWorldGrid = function() {
-		const gridSize = World.grid.gridSize;// * Math.ceil(Renderer.camera.zoom);
-		ctx.strokeStyle = "#444";
-		
-		for (let dx = gridSize; dx < World.size.value[0]; dx += gridSize)
-		{
-			let canvasPosA = Renderer.camera.worldPosToCanvPos(new Vector(
-				dx, 
-				0
-			));
-			let canvasPosB = Renderer.camera.worldPosToCanvPos(new Vector(
-				dx, 
-				World.size.value[1]
-			));
-
-			ctx.beginPath();
-			ctx.moveTo(canvasPosA.value[0], canvasPosA.value[1]);
-			ctx.lineTo(canvasPosB.value[0], canvasPosB.value[1]);
-			ctx.closePath();
-			ctx.stroke();
-		}
-
-		for (let dy = gridSize; dy < World.size.value[1]; dy += gridSize)
-		{
-			let canvasPosA = Renderer.camera.worldPosToCanvPos(new Vector(
-				0,
-				dy
-			));
-			let canvasPosB = Renderer.camera.worldPosToCanvPos(new Vector(
-				World.size.value[0],
-				dy
-			));
-
-			ctx.beginPath();
-			ctx.moveTo(canvasPosA.value[0], canvasPosA.value[1]);
-			ctx.lineTo(canvasPosB.value[0], canvasPosB.value[1]);
-			ctx.closePath();
-			ctx.stroke();
-		}
-	}
+	
 
 
 
