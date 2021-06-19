@@ -85,7 +85,7 @@ function _Builder() {
           let outputs = this.curBuildLines[0].from.isWorldInput ? this.curBuildLines[0].from.parent.inputs : this.curBuildLines[0].from.parent.outputs;
           for (let i = 1; i < deltaIndex + 1; i++)
           {
-            let dIndex = i * (1 - isNegative);
+            let dIndex = i * (1 - isNegative * 2);
             let index = this.curBuildLines[0].from.index + dIndex;
             
             if (!outputs[index]) continue;
