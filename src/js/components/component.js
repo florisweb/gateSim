@@ -1,4 +1,5 @@
 window.instantRun = false;
+window.runSpeed = 0;
 function NandGateComponent({position, id}) {
 	let This = this;
 	Component.call(this, {
@@ -102,8 +103,6 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 	this.fillColor = '#555';
 
 	this.draw = function() {
-		if (this.getDepth() > Renderer.maxRenderDepth) return;
-
 		let position = this.getPosition();
 		Renderer.drawLib.drawRect({
 			position: position,
@@ -122,6 +121,7 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 			color: '#fff'
 		});
 
+		if (this.getDepth() + 1 > Renderer.maxRenderDepth) return;
 		for (let component of this.content) component.draw();
 	}
 
@@ -210,7 +210,7 @@ function LineComponent({from, to}) {
 		if (this.to) this.to.toLines.push(this);
 	}
 
-	this.remove = function(_removeDepth = 0) {
+	this.remove = function() {
 		for (let i = 0; i < this.parent.content.length; i++)
 		{
 			if (this.parent.content[i].id != this.id) continue;
@@ -227,8 +227,6 @@ function LineComponent({from, to}) {
 			if (this.from.fromLines[i].id != this.id) continue;
 			this.from.fromLines.splice(i, 1);
 		}
-
-		if (_removeDepth == 0) this.to.run();
 	}
 
 
@@ -295,7 +293,7 @@ function Node({turnedOn, name}, _parent, _id) {
 	this.name		= name;
 
 	this.run = function(_index, _fullRun = false) {
-		let prevStatus = this.turnedOn;
+		let prevStatus = !!this.turnedOn;
 		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -303,14 +301,14 @@ function Node({turnedOn, name}, _parent, _id) {
 			this.turnedOn = true;
 			break;
 		}
-
+		console.log('run', _index, 'don\'t end: ', prevStatus == this.turnedOn && !_fullRun);
 		if (prevStatus == this.turnedOn && !_fullRun) return;
 
 		if (window.instantRun)
 		{
 			for (let line of this.fromLines) line.to.run(_index + 1, _fullRun);
 		} else {
-			for (let line of this.fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, 0);
+			for (let line of this.fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
 		}
 	}
 
@@ -667,7 +665,7 @@ function HitBoxComponent({hitBox}) {
 
 	let enabled = false;
 	this.enableHitBox = function() {
-		if (enabled) return console.warn('Already enabled');
+		if (enabled) return;
 		enabled = true;
 		HitBoxManager.register(this);
 	}

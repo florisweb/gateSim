@@ -221,8 +221,16 @@ function binaryToNumber(_binaryString) {
 function countNandGatesAndLines(_obj) {
   let lines = 0;
   let nandGates = 0;
+  let nodes = 0;
   for (let component of _obj.content)
   {
+
+    if (component.isNode)
+    {
+      nodes++;
+      continue;
+    }
+
     if (component.type == 'line')
     {
       lines++;
@@ -236,10 +244,12 @@ function countNandGatesAndLines(_obj) {
     let result = countNandGatesAndLines(component);
     lines += result.lines;
     nandGates += result.nandGates;
+    nodes += result.nodes;
   } 
 
   return {
     lines: lines,
-    nandGates: nandGates
+    nandGates: nandGates,
+    nodes: nodes
   }
 }

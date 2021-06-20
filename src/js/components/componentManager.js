@@ -243,40 +243,28 @@ function _ComponentManager() {
 			if (!node.isNode || node.id != _id) continue;
 			return node;
 		}
-
 		return false;
 	}
 
+	function getLineById(_content, _id) {
+		for (let line of _content)
+		{
+			if (line.type != 'line' || line.id != _id) continue;
+			return line;
+		}
+		return false;
+	}
 
 
 
 	this.optimizeComponent = function(_component) {
 		// let component = this.flattenComponent(Object.assign({}, _component))
 		let component = Object.assign({}, _component);
-		let newComponents = [];
-		for (let i = component.content.length - 1; i >= 0; i--)
+		let originalComponentLength = component.content.length;
+		for (let i = originalComponentLength - 1; i >= 0; i--)
 		{
 			let node = component.content[i];
 			if (!node.isNode) continue;
-			// if (node.toLines.length == 0 || node.fromLines.length == 0)
-			// {
-			// 	node.remove();
-			// 	continue;
-			// }
-
-			console.log(i, 'node:', node.toLines.length, node.fromLines.length);
-			if (node.toLines.length == 1 && node.fromLines.length == 1)
-			{
-				console.log('direct link');
-				let line = new LineComponent({
-					from: node.toLines[0].from,
-					to: node.fromLines[0].to
-				});
-
-				newComponents.push(line);
-				node.remove();
-				continue;
-			}
 
 			if (node.toLines.length == 1)
 			{
@@ -286,7 +274,8 @@ function _ComponentManager() {
 						from: node.toLines[0].from,
 						to: fromLine.to
 					});
-					newComponents.push(line);
+					component.addComponent(line);
+					line.activate();
 				}
 
 				node.remove();
@@ -301,16 +290,22 @@ function _ComponentManager() {
 						from: toLine.from,
 						to: node.fromLines[0].to
 					});
-					newComponents.push(line);
+					component.addComponent(line);
+					line.activate();
 				}
-
 				node.remove();
 				continue;
 			}
 		}
 
-		console.log(newComponents);
-		for (let item of newComponents) component.addComponent(item);
 		return component;
+	}
+
+
+	function addLine(_config = {from, to}, _component) {
+		let line = new LineComponent(_config);
+		line.parent = _component;
+		line.activate();
+		return line;
 	}
 }
