@@ -274,7 +274,7 @@ function LineComponent({from, to}) {
 function Node({turnedOn, name}, _parent, _id) {
 	this.isNode = true;
 	this.getDepth = function() {
-		return this.parent.getDepth();
+		return this.parent.getDepth() + 1 - !!this.isInOutPut;
 	}
 
 	CircularHitBoxComponent.call(this, {radius: nodeRadius});
@@ -337,6 +337,7 @@ function Node({turnedOn, name}, _parent, _id) {
 	}
 
 	this.draw = function() {
+		if (this.getDepth() > Renderer.maxRenderDepth) return;
 		Renderer.drawInOutPut({
 			position: this.getPosition(),
 			name: this.name,
@@ -352,6 +353,7 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 	Node.call(this, {turnedOn: turnedOn, name: name}, _parent);
 	this.index = _index;
 	this.isInput = _isInput;
+	this.isInOutPut = true;
 
 	this.getPosition = function() {
 		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
