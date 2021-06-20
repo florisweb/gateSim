@@ -128,6 +128,7 @@ function _ComponentManager() {
 		let isRoot = !_masterParent;
 		if (isRoot) _masterParent = _component;
 
+		// Deal with nandgates
 		if (_component.componentId == 'nandgate')
 		{
 			if (isRoot) return _component;
@@ -137,6 +138,7 @@ function _ComponentManager() {
 		}
 
 		let content = [];
+		// Transfer the in- and outputs to nodes
 		if (!isRoot)
 		{
 			for (let input of _component.inputs)
@@ -149,10 +151,10 @@ function _ComponentManager() {
 					_masterParent,
 					input.id,
 				);
-				node.fromLines = node.toLines = [];
 				node.position = input.getPosition();
 				content.push(node);
 			}
+
 			for (let output of _component.outputs)
 			{
 				let node = new Node(
@@ -163,12 +165,16 @@ function _ComponentManager() {
 					_masterParent,
 					output.id,
 				);
-				node.fromLines = node.toLines = [];
 				node.position = output.getPosition();
 				content.push(node);
 			}
+		} else {
+			for (let input of _component.inputs) input.fromLines = [];
+			for (let output of _component.outputs) output.toLines = [];
 		}
 		
+		
+		// Recursively flatten all components
 		for (let item of _component.content)
 		{
 			if (item.type == 'line') continue;
@@ -176,6 +182,7 @@ function _ComponentManager() {
 			content = content.concat(newContent);
 		}
 
+		// Readd the lines
 		for (let line of _component.content)
 		{
 			if (line.type != 'line') continue;
@@ -191,27 +198,29 @@ function _ComponentManager() {
 		}
 
 
+		// Finish the process
 		if (isRoot)
 		{
-			for (let i = _component.content.length - 1; i >= 0; i--)
-			{
-				if (_component.content[i].type == 'line') 
-				{
-					_component.content[i].lineNeedsUpdate = true;
-					continue;
-				}
-				_component.content.splice(i, 1);
-			}
+			// for (let i = _component.content.length - 1; i >= 0; i--)
+			// {
+			// 	if (_component.content[i].type == 'line') 
+			// 	{
+			// 		_component.content[i].lineNeedsUpdate = true;
+			// 		continue;
+			// 	}
+			// 	_component.content.splice(i, 1);
+			// }
+			_component.content = [];
 
 			for (let item of content) _component.addComponent(item);
 
-			for (let i = 0; i < _component.content.length; i++)
-			{
-				if (_component.content[i].type != 'line' || !_component.content[i].lineNeedsUpdate) continue;
-				_component.content[i].from = getNodeFromContentById(content, _component.content[i].from.id, _component);
-				_component.content[i].to = getNodeFromContentById(content, _component.content[i].to.id, _component);
-				if (!_component.content[i].to || !_component.content[i].from) console.warn('[!] FlattenComponent.line: from/to node not found', _component.content[i]);
-			}
+			// for (let i = 0; i < _component.content.length; i++)
+			// {
+			// 	if (_component.content[i].type != 'line' || !_component.content[i].lineNeedsUpdate) continue;
+			// 	_component.content[i].from = getNodeFromContentById(content, _component.content[i].from.id, _component);
+			// 	_component.content[i].to = getNodeFromContentById(content, _component.content[i].to.id, _component);
+			// 	if (!_component.content[i].to || !_component.content[i].from) console.warn('[!] FlattenComponent.line: from/to node not found', _component.content[i]);
+			// }
 
 			return _component;
 		}
@@ -236,5 +245,72 @@ function _ComponentManager() {
 		}
 
 		return false;
+	}
+
+
+
+
+	this.optimizeComponent = function(_component) {
+		// let component = this.flattenComponent(Object.assign({}, _component))
+		let component = Object.assign({}, _component);
+		let newComponents = [];
+		for (let i = component.content.length - 1; i >= 0; i--)
+		{
+			let node = component.content[i];
+			if (!node.isNode) continue;
+			// if (node.toLines.length == 0 || node.fromLines.length == 0)
+			// {
+			// 	node.remove();
+			// 	continue;
+			// }
+
+			console.log(i, 'node:', node.toLines.length, node.fromLines.length);
+			if (node.toLines.length == 1 && node.fromLines.length == 1)
+			{
+				console.log('direct link');
+				let line = new LineComponent({
+					from: node.toLines[0].from,
+					to: node.fromLines[0].to
+				});
+
+				newComponents.push(line);
+				node.remove();
+				continue;
+			}
+
+			if (node.toLines.length == 1)
+			{
+				for (let fromLine of node.fromLines)
+				{
+					let line = new LineComponent({
+						from: node.toLines[0].from,
+						to: fromLine.to
+					});
+					newComponents.push(line);
+				}
+
+				node.remove();
+				continue;
+			}
+
+			if (node.fromLines.length == 1)
+			{
+				for (let toLine of node.toLines)
+				{
+					let line = new LineComponent({
+						from: toLine.from,
+						to: node.fromLines[0].to
+					});
+					newComponents.push(line);
+				}
+
+				node.remove();
+				continue;
+			}
+		}
+
+		console.log(newComponents);
+		for (let item of newComponents) component.addComponent(item);
+		return component;
 	}
 }

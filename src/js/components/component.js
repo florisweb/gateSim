@@ -319,7 +319,7 @@ function Node({turnedOn, name}, _parent, _id) {
 		for (let i = this.fromLines.length - 1; i >= 0; i--) this.fromLines[i].remove(_removeDepth);
 		for (let i = this.toLines.length - 1; i >= 0; i--) this.toLines[i].remove(_removeDepth);
 
-		let list = this.isInput ? this.parent.inputs : this.parent.outputs;
+		let list = (this.isInput ? this.parent.inputs : this.parent.outputs);
 		for (let i = 0; i < list.length; i++)
 		{
 			if (list[i].id != this.id) continue;
@@ -327,6 +327,13 @@ function Node({turnedOn, name}, _parent, _id) {
 			break;
 		}
 		for (let i = 0; i < list.length; i++) list[i].index = i;
+			
+		for (let i = 0; i < this.parent.content.length; i++)
+		{
+			if (this.parent.content[i].id != this.id) continue;
+			this.parent.content.splice(i, 1);
+			break;
+		}
 	}
 
 	this.export = function() {
