@@ -117,4 +117,105 @@ function _ComponentManager() {
 		if (_data.index > arr.length - 1) return console.warn('Component-node not found', _data);;
 		return arr[_data.index];
 	}
+
+
+
+
+
+
+
+	this.flattenComponent = function(_component, _masterParent, _isRoot = true) {
+		if (_isRoot)
+		{
+			// for (let input of _masterParent.inputs) input.fromLines = [];
+			// for (let output of _masterParent.outputs) output.toLines = [];
+		}
+
+		if (_component.componentId == 'nandgate')
+		{
+			_component.position = _component.getPosition();
+			_component.parent = _masterParent;
+			return [_component];
+		}
+
+		_component.deprecated = true;
+
+		let content = [];
+		for (let input of _component.inputs)
+		{
+			input.remove();
+			let node = new Node(
+				{
+					turnedOn: input.turnedOn, 
+					name: input.name
+				}, 
+				_masterParent,
+				input.id,
+			);
+			node.fromLines = node.toLines = [];
+			node.position = input.getPosition();
+			content.push(node);
+		}
+		for (let output of _component.outputs)
+		{
+			output.remove();
+			let node = new Node(
+				{
+					turnedOn: output.turnedOn, 
+					name: output.name
+				}, 
+				_masterParent,
+				output.id,
+			);
+			node.fromLines = node.toLines = [];
+			node.position = output.getPosition();
+			content.push(node);
+		}
+		
+		for (let item of _component.content)
+		{
+			if (item.type == 'line') continue;
+			let newContent = this.flattenComponent(item, _masterParent, false);
+			content = content.concat(newContent);
+		}
+
+		for (let line of _component.content)
+		{
+			if (line.type != 'line') continue;
+			line.parent = _masterParent;
+			console.log('[!] new line', line.from.id, line.to.id, line);
+
+			line.from = getNodeFromContentById(content, line.from.id);
+			line.to = getNodeFromContentById(content, line.to.id);
+			if (!line.to || !line.from)
+			{
+				console.warn('[!] FlattenComponent.line: from/to node not found', line.from, line.to, line);
+				continue;
+			}
+			content.push(line);
+		}
+
+
+		return content;
+
+
+		// for (let component of content) _masterParent.addComponent(component);
+	}
+
+	function getNodeFromContentById(_content, _id) {
+		for (let node of _content)
+		{
+			if (!node.isNode && node.componentId == 'nandgate')
+			{
+				let inputNode = getNodeFromContentById(node.inputs, _id);
+				if (inputNode) return inputNode;	
+				let outputNode = getNodeFromContentById(node.outputs, _id);
+				if (outputNode) return outputNode;
+			}
+
+			if (!node.isNode || node.id != _id) continue;
+			return node;
+		}
+		return false;
+	}
 }

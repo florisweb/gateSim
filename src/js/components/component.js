@@ -271,20 +271,28 @@ function LineComponent({from, to}) {
 
 
 
-function Node({turnedOn}) {
+function Node({turnedOn, name}, _parent, _id) {
 	this.isNode = true;
 	this.getDepth = function() {
 		return this.parent.getDepth();
 	}
+
 	CircularHitBoxComponent.call(this, {radius: nodeRadius});
 	ClickComponent.call(this);
 	this.onclick = function() {};
 
+	this.position = new Vector(0, 0);
+	this.getPosition = function() {
+		return this.parent.getPosition().copy().add(this.position);
+	}
+	this.activate = function() {};
 
-	this.id 		= Symbol();
+	this.id 		= _id ? _id : 'node' + newId();// Symbol();
 	this.turnedOn 	= turnedOn;
 	this.toLines 	= [];
 	this.fromLines 	= [];
+	this.parent 	= _parent;
+	this.name		= name;
 
 	this.run = function(_index, _fullRun = false) {
 		let prevStatus = this.turnedOn;
@@ -319,23 +327,6 @@ function Node({turnedOn}) {
 			break;
 		}
 		for (let i = 0; i < list.length; i++) list[i].index = i;
-
-	}
-}
-
-
-
-function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
-	Node.call(this, {turnedOn: turnedOn});
-	this.index = _index;
-	this.name = name;
-	this.isInput = _isInput;
-	this.parent = _parent;
-
-	this.getPosition = function() {
-		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
-		let y = this.parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (nodeRadius * 2 + inOutPutMargin * 2);
-		return this.parent.getPosition().copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
 	}
 
 	this.export = function() {
@@ -352,6 +343,20 @@ function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
 			isInput: this.isInput,
 			turnedOn: this.turnedOn
 		});
+	}
+}
+
+
+
+function InOutput({name, turnedOn}, _parent, _index, _isInput = true) {
+	Node.call(this, {turnedOn: turnedOn, name: name}, _parent);
+	this.index = _index;
+	this.isInput = _isInput;
+
+	this.getPosition = function() {
+		let items = this.isInput ? this.parent.inputs : this.parent.outputs;
+		let y = this.parent.size.value[1] / 2 - (items.length / 2 - this.index - .5) * (nodeRadius * 2 + inOutPutMargin * 2);
+		return this.parent.getPosition().copy().add(new Vector(this.parent.size.value[0] * !this.isInput, y));
 	}
 }
 
@@ -472,8 +477,6 @@ function CurComponent({inputs, outputs, id}) {
 
 	this.inputNodeEditorButton = new CurComponent_NodeEditorButton({isInput: true, parent: this})
 	this.outputNodeEditorButton = new CurComponent_NodeEditorButton({isInput: false, parent: this})
-
-
 	this.verticalSizeChanger = new CurComponent_VerticalSizeChanger(this, actualThickness, visualThickness);
 	this.horizontalSizeChanger = new CurComponent_HorizontalSizeChanger(this, actualThickness, visualThickness);
 
