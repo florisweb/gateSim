@@ -124,58 +124,55 @@ function _ComponentManager() {
 
 
 
-	this.flattenComponent = function(_component, _masterParent, _isRoot = true) {
-		if (_isRoot)
-		{
-			// for (let input of _masterParent.inputs) input.fromLines = [];
-			// for (let output of _masterParent.outputs) output.toLines = [];
-		}
+	this.flattenComponent = function(_component, _masterParent = false) {
+		let isRoot = !_masterParent;
+		if (isRoot) _masterParent = _component;
 
 		if (_component.componentId == 'nandgate')
 		{
+			if (isRoot) return _component;
 			_component.position = _component.getPosition();
 			_component.parent = _masterParent;
 			return [_component];
 		}
 
-		_component.deprecated = true;
-
 		let content = [];
-		for (let input of _component.inputs)
+		if (!isRoot)
 		{
-			input.remove();
-			let node = new Node(
-				{
-					turnedOn: input.turnedOn, 
-					name: input.name
-				}, 
-				_masterParent,
-				input.id,
-			);
-			node.fromLines = node.toLines = [];
-			node.position = input.getPosition();
-			content.push(node);
-		}
-		for (let output of _component.outputs)
-		{
-			output.remove();
-			let node = new Node(
-				{
-					turnedOn: output.turnedOn, 
-					name: output.name
-				}, 
-				_masterParent,
-				output.id,
-			);
-			node.fromLines = node.toLines = [];
-			node.position = output.getPosition();
-			content.push(node);
+			for (let input of _component.inputs)
+			{
+				let node = new Node(
+					{
+						turnedOn: input.turnedOn, 
+						name: input.name
+					}, 
+					_masterParent,
+					input.id,
+				);
+				node.fromLines = node.toLines = [];
+				node.position = input.getPosition();
+				content.push(node);
+			}
+			for (let output of _component.outputs)
+			{
+				let node = new Node(
+					{
+						turnedOn: output.turnedOn, 
+						name: output.name
+					}, 
+					_masterParent,
+					output.id,
+				);
+				node.fromLines = node.toLines = [];
+				node.position = output.getPosition();
+				content.push(node);
+			}
 		}
 		
 		for (let item of _component.content)
 		{
 			if (item.type == 'line') continue;
-			let newContent = this.flattenComponent(item, _masterParent, false);
+			let newContent = this.flattenComponent(item, _masterParent);
 			content = content.concat(newContent);
 		}
 
@@ -183,10 +180,8 @@ function _ComponentManager() {
 		{
 			if (line.type != 'line') continue;
 			line.parent = _masterParent;
-			console.log('[!] new line', line.from.id, line.to.id, line);
-
-			line.from = getNodeFromContentById(content, line.from.id);
-			line.to = getNodeFromContentById(content, line.to.id);
+			line.from = getNodeFromContentById(content, line.from.id, _masterParent);
+			line.to = getNodeFromContentById(content, line.to.id, _masterParent);
 			if (!line.to || !line.from)
 			{
 				console.warn('[!] FlattenComponent.line: from/to node not found', line.from, line.to, line);
@@ -196,14 +191,37 @@ function _ComponentManager() {
 		}
 
 
+		if (isRoot)
+		{
+			for (let i = _component.content.length - 1; i >= 0; i--)
+			{
+				if (_component.content[i].type == 'line') 
+				{
+					_component.content[i].lineNeedsUpdate = true;
+					continue;
+				}
+				_component.content.splice(i, 1);
+			}
+
+			for (let item of content) _component.addComponent(item);
+
+			for (let i = 0; i < _component.content.length; i++)
+			{
+				if (_component.content[i].type != 'line' || !_component.content[i].lineNeedsUpdate) continue;
+				_component.content[i].from = getNodeFromContentById(content, _component.content[i].from.id, _component);
+				_component.content[i].to = getNodeFromContentById(content, _component.content[i].to.id, _component);
+				if (!_component.content[i].to || !_component.content[i].from) console.warn('[!] FlattenComponent.line: from/to node not found', _component.content[i]);
+			}
+
+			return _component;
+		}
+
 		return content;
-
-
-		// for (let component of content) _masterParent.addComponent(component);
 	}
 
-	function getNodeFromContentById(_content, _id) {
-		for (let node of _content)
+	function getNodeFromContentById(_content, _id, _masterParent = {inputs: [], outputs: []}) {
+		let nodes = [..._content, ..._masterParent.inputs, ..._masterParent.outputs];
+		for (let node of nodes)
 		{
 			if (!node.isNode && node.componentId == 'nandgate')
 			{
@@ -216,6 +234,7 @@ function _ComponentManager() {
 			if (!node.isNode || node.id != _id) continue;
 			return node;
 		}
+
 		return false;
 	}
 }
