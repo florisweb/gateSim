@@ -11,6 +11,8 @@
 
 	class App_componentManager {
 		private $filter;
+		private $nodeFilter;
+		private $referenceFilter;
 		private $userId = false;
 		
 		public function __construct() {
@@ -29,16 +31,58 @@
 				"id" 				=> ['int'], // internal reference id
 				
 				"name" 				=> ['string', 'Nameless', $GLOBALS["FILTERER"]->Defaultable],
-				"inputs" 			=> [$this->nodeFilter],
-				"outputs" 			=> [$this->nodeFilter],
-				"content" 			=> [$this->referenceFilter],
+				"inputs" 			=> ['array'],
+				"outputs" 			=> ['array'],
+				"content" 			=> ['array'],
 			));
 		}
 
 
 		private function importComponent($_component) {
-			// Do some checks to ensure the component is viable
-			return $_component;
+			$component = $this->filter->filter($_component);
+			$component['inputs'] = $this->filterNodeList($component['inputs']);
+			$component['outputs'] = $this->filterNodeList($component['outputs']);
+			$component['content'] = $this->filterContent($component['content']);
+
+			return $component;
+		}
+
+		private function filterNodeList($_nodes) {
+			$newNodes = [];
+			for ($i = 0; $i < sizeof($_nodes); $i++)
+			{
+				$node = $this->nodeFilter->filter($_nodes[$i]);
+				if (!$node || $node == $GLOBALS['FILTERER']->InvalidObj) continue;
+				array_push($newNodes, $node);
+			}
+			return $newNodes;
+		}
+		private function filterContent($_content) {
+			$newContent = [];
+			for ($i = 0; $i < sizeof($_content); $i++)
+			{
+				if ($item['type'] == 'line')
+				{
+					$line = $this->filterLine($item);
+					if (!$line) continue;
+					array_push($newContent, $line);
+					continue;
+				}
+
+				$item = $this->referenceFilter->filter($_content[$i]);
+				if (!$item || $item == $GLOBALS['FILTERER']->InvalidObj) continue;
+				if (sizeof($item['position']) != 2) continue;
+				$item['position'] = [(float)$item['position'][0], (float)$item['position'][1]];
+
+				$referencedComponent = $this->getComponentById($item['componentId']);
+				if (!$referencedComponent) continue;
+				array_push($newContent, $item);
+			}
+			return $newContent;
+		}
+
+		private function filterLine($_line) {
+			return $_line;
 		}
 
 
