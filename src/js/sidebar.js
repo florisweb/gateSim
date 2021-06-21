@@ -11,6 +11,28 @@ function _SideBar_componentList() {
   let HTML = {
     componentHolder: $('#sideBar .componentHolder')[0]
   }
+  let Menu = OptionMenu.create();
+  let CurMenuComponent = false;
+  Menu.addOption(
+    'Edit', 
+    function() {
+      if (!CurMenuComponent) return;
+      World.import(CurMenuComponent);
+      Menu.close();
+    }, 
+    'images/icons/changeIconDark.png'
+  );
+  Menu.addOption(
+    'Remove', 
+    async function() {
+      if (!CurMenuComponent) return;
+      await Server.removeComponent(CurMenuComponent.componentId);
+      SideBar.componentList.updateComponentList();
+      Menu.close();
+    }, 
+    'images/icons/removeIcon.png'
+  );
+
 
   this.setup = function() {
     this.updateComponentList();
@@ -31,14 +53,22 @@ function _SideBar_componentList() {
     element.innerHTML =   "<div class='titleHolder text'></div>" + 
                           "<img class='icon optionIcon clickable' src='images/icons/optionIcon.png'>" + 
                           "<div class='text subText'>Native</div>";
-                          // "<canvas class='componentPreview'></canvas>";
+
     setTextToElement(element.children[0], _component.name);
     if (_component.creatorName) setTextToElement(element.children[2], 'By: ' + _component.creatorName);
 
     element.addEventListener('click', function(_e) {
-      if (_e.target.classList.contains('optionIcon')) return World.import(_component);
+      if (_e.target.classList.contains('optionIcon'))
+      { 
+        CurMenuComponent = _component;
+        Menu.open(element.children[1]);
+        return;
+      } 
       World.curComponent.addComponent(ComponentManager.importComponent(_component));
     });
+
+
+
 
     HTML.componentHolder.append(element);
   }
