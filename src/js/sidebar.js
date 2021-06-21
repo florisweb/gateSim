@@ -3,14 +3,46 @@ function _SideBar() {
   this.setup = function() {
     this.componentList.setup();
   }
+
+  this.searchPage = new _SideBar_page(1);
+  this.componentPage = new _SideBar_page(0);
+
+  this.curPage = this.componentPage;
 }
+
+function _SideBar_page(_index) {
+  const Index = _index;
+  const HTML = {
+    pages: $('#sideBar .page'),
+    page: $('#sideBar .page')[Index],
+  }
+
+  this.openState = false;
+  this.open = function() {
+    this.openState = true;
+    for (let page of HTML.pages) page.classList.add('hide');
+    HTML.page.classList.remove('hide');
+    SideBar.curPage = this;
+  }
+}
+
 
 
 
 function _SideBar_componentList() {
   let HTML = {
-    componentHolder: $('#sideBar .componentHolder')[0]
+    headers: $('#sideBar .header'),
+
+    favorites: {
+      componentHolder: $('#sideBar .componentList.favorites .componentHolder')[0],
+    },
+
+    myComponents: {
+      componentHolder: $('#sideBar .componentList.myComponents .componentHolder')[0],
+    },
+    componentHolder: $('#sideBar .componentList.favorites .componentHolder')[0],
   }
+
   let Menu = OptionMenu.create();
   let CurMenuComponent = false;
   Menu.addOption(
@@ -34,6 +66,25 @@ function _SideBar_componentList() {
   );
 
 
+  for (let header of HTML.headers) header.addEventListener(
+    'click', 
+    function() {
+      if (this.children[0].classList.contains('close'))
+      {
+        this.children[0].classList.remove('close');
+        this.parentNode.children[1].classList.remove('hide');
+      } else {
+        this.children[0].classList.add('close');
+        this.parentNode.children[1].classList.add('hide');
+      }
+    }
+  );
+
+
+
+
+
+
   this.setup = function() {
     this.updateComponentList();
   }
@@ -41,6 +92,7 @@ function _SideBar_componentList() {
 
   this.updateComponentList = async function() {
     await Server.getComponentList();
+    HTML.componentHolder.classList.remove('hide');
     HTML.componentHolder.innerHTML = '';
     for (let component of Server.components) this.addComponent(component);
   }

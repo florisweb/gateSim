@@ -24,8 +24,6 @@ function _Server() {
 			...response.result
 		];
 
-		// if (localStorage.components) this.components = this.components.concat(JSON.parse(localStorage.components));
-
 		return this.components;
 	}
 

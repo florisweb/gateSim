@@ -9,13 +9,29 @@
 	</head>	
 	<body class='noselect'>		
 		<div id='sideBar'>
-			<div class='button bDefault bBoxy text' onclick='Builder.newChip()'>New Component</div>
+			<div class='page'>
+				<div class='button bDefault bBoxy text' onclick='Builder.newChip()'>+ New Component</div>
+				<br>
+				<div class='componentList favorites'>
+					<div class="header clickable">
+						<img src="images/icons/dropDownIcon.png" class="headerIcon dropDownButton">
+						<div class="text headerText">Favourites</div>
+					</div>
+					<div class='componentHolder hide'></div>
+				</div>
 
-			<div class="header clickable">
-				<img src="images/icons/dropDownIcon.png" class="headerIcon dropDownButton close">
-				<div class="text headerText">My Components</div>
+				<div class='componentList myComponents'>
+					<div class="header clickable">
+						<img src="images/icons/dropDownIcon.png" class="headerIcon dropDownButton">
+						<div class="text headerText">All Components</div>
+					</div>
+					<div class='componentHolder hide'></div>
+				</div>
 			</div>
-			<div class='componentHolder'></div>
+			
+			<div class='page hide'>
+				hey
+			</div>
 		</div>
 		<div id='mainContent'>
 			<div class='header'>
