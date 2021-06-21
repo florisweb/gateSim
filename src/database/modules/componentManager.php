@@ -11,8 +11,10 @@
 
 	class App_componentManager {
 		private $filter;
+		private $userId = false;
 		
 		public function __construct() {
+			$this->userId = $GLOBALS["SESSION"]->get("userId");
 			$this->nodeFilter 		= $GLOBALS['FILTERER']->createFilter(array(
 				"name" 				=> ['string', 'Nameless', $GLOBALS["FILTERER"]->Defaultable],
 			));
@@ -51,6 +53,7 @@
 
 		private function exportComponent($_component) {
 			if (!$_component) return $_component;
+			if ($_component['creatorId'] == $this->userId) $_component["isOwnComponent"] = true;
 			unset($_component['creatorId']);
 			return $_component;
 		}
