@@ -60,11 +60,11 @@
 		private function filterContent($_content) {
 			$newContent = [];
 			for ($i = 0; $i < sizeof($_content); $i++)
-			{
-				if ($item['type'] == 'line')
+			{	
+				if ($_content[$i]['type'] == 'line')
 				{
-					$line = $this->filterLine($item);
-					if (!$line) continue;
+					$line = $this->filterLine($_content[$i]);
+					// if (!$line) continue;
 					array_push($newContent, $line);
 					continue;
 				}
@@ -75,7 +75,7 @@
 				$item['position'] = [(float)$item['position'][0], (float)$item['position'][1]];
 
 				$referencedComponent = $this->getComponentById($item['componentId']);
-				if (!$referencedComponent) continue;
+				if (!$referencedComponent && $item['componentId'] != -1) continue;
 				array_push($newContent, $item);
 			}
 			return $newContent;

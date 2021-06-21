@@ -1,14 +1,17 @@
+
 window.instantRun = false;
 window.runSpeed = 0;
+
+const NandGateComponentId = -1;
 function NandGateComponent({position, id}) {
 	let This = this;
 	Component.call(this, {
 		position: position,
 		name: 'Nand gate',
 		id: id,
-		componentId: 'nandgate',
-		inputs: [{name: 'input 1'}, {name: 'input 2'}],
-		outputs: [{name: 'output'}],
+		componentId: NandGateComponentId,
+		inputs: [{name: ''}, {name: ''}],
+		outputs: [{name: ''}],
 	});
 
   	this.inputs[0].run = this.inputs[1].run = function(_index) {

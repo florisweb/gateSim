@@ -236,7 +236,7 @@ function countNandGatesAndLines(_obj) {
       lines++;
       continue;
     }
-    if (component.componentId == 'nandgate')
+    if (component.componentId == NandGateComponentId)
     {
       nandGates++;
       continue;

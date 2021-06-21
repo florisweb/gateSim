@@ -1,7 +1,7 @@
 
 
 function _Server() {
-	const nandGate = JSON.parse("{\"position\":[0,0],\"name\":\"Nand gate\",\"id\":4461559745884998,\"componentId\":\"nandgate\",\"inputs\":[{\"name\":\"input 1\"},{\"name\":\"input 2\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[]}");
+	const nandGate = JSON.parse("{\"position\":[0,0],\"name\":\"Nand gate\",\"id\":3547287069148126,\"componentId\":" + NandGateComponentId + ",\"inputs\":[{\"name\":\"\"},{\"name\":\"\"}],\"outputs\":[{\"name\":\"\"}],\"content\":[]}");
 	this.components = [nandGate];
 
 	this.getComponentById = function(_compId) {

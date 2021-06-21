@@ -13,8 +13,8 @@ function _ComponentManager() {
 		let componentConstructor = Component;
 		switch (_data.componentId)
 		{
-			case 'nandgate': 		componentConstructor = NandGateComponent; break;
-			case 'worldComponent': 	componentConstructor = CurComponent; break;
+			case NandGateComponentId: 	componentConstructor = NandGateComponent; break;
+			case 'worldComponent': 		componentConstructor = CurComponent; break;
 		}
 		if (_isWorldComponent) componentConstructor = CurComponent;
 
@@ -113,7 +113,7 @@ function _ComponentManager() {
 		if (isRoot) _masterParent = _component;
 
 		// Deal with nandgates
-		if (_component.componentId == 'nandgate')
+		if (_component.componentId == NandGateComponentId)
 		{
 			if (isRoot) return _component;
 			_component.position = _component.getPosition();
@@ -216,7 +216,7 @@ function _ComponentManager() {
 		let nodes = [..._content, ..._masterParent.inputs, ..._masterParent.outputs];
 		for (let node of nodes)
 		{
-			if (!node.isNode && node.componentId == 'nandgate')
+			if (!node.isNode && node.componentId == NandGateComponentId)
 			{
 				let inputNode = getNodeFromContentById(node.inputs, _id);
 				if (inputNode) return inputNode;	

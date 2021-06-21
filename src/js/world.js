@@ -25,8 +25,8 @@ function _World() {
     HitBoxManager.clear();
     let inputs = [];
     let outputs = [];
-    for (let i = 0; i < inputCount; i++) inputs.push({name: 'input ' + i});
-    for (let i = 0; i < outputCount; i++) outputs.push({name: 'output ' + i});
+    for (let i = 0; i < inputCount; i++) inputs.push({name: ''});
+    for (let i = 0; i < outputCount; i++) outputs.push({name: ''});
 
     Builder.list = [];
     this.curComponent = new CurComponent({
