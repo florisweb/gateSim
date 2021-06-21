@@ -17,7 +17,8 @@ function _SideBar_componentList() {
   }
 
 
-  this.updateComponentList = function() {
+  this.updateComponentList = async function() {
+    await Server.getComponentList();
     HTML.componentHolder.innerHTML = '';
     for (let component of Server.components) this.addComponent(component);
   }

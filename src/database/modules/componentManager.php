@@ -36,8 +36,9 @@
 		}
 
 
-		private function filterComponent() {
-
+		private function importComponent($_component) {
+			// Do some checks to ensure the component is viable
+			return $_component;
 		}
 
 
@@ -66,61 +67,16 @@
 
 
 
-		private function addComponent($_component) {
-			$creatorId = $this->getUserId();
-			if (!$creatorId) return "E_noAuth";
-			
-			$result = $this->DB->execute(
-				"INSERT INTO $this->DBTableName (name, inputs, outputs, content, creatorId, internalId) VALUES (?, ?, ?, ?, ?, ?)", 
-				array(
-					$_component["name"],
-					json_encode($_component["inputs"]),
-					json_encode($_component["outputs"]),
-					json_encode($_component["content"]),
-					$creatorId,
-					$_component["id"],
-				)
-			);
-			$componentId = $this->DB->getLatestInsertId();
-			return $this->getComponentById($componentId);
-		}
-
+	
 		public function updateComponent($_component) {
-			$exists = $this->getComponentById($_component["componentId"]);
-			if (!$exists) return $this->addComponent($_component);
-
-			$creatorId = $this->getUserId();
-			if (!$creatorId) return "E_noAuth";
-			if ($exists['creatorId'] != $creatorId) return "E_notAllowed";
-
-			
-			$result = $this->DB->execute(
-				"UPDATE $this->DBTableName SET name=?, inputs=?, outputs=?, content=?, internalId=?", 
-				array(
-					$_component["name"],
-					json_encode($_component["inputs"]),
-					json_encode($_component["outputs"]),
-					json_encode($_component["content"]),
-					$_component["id"],
-				)
-			);
-			return $this->getComponentById($exists['componentId']);
+			$component = $this->importComponent($_component);
+			if (!$component) return false;
+			return $this->exportComponent($GLOBALS['DBHelper']->updateComponent($component));
 		}
 
 
 		public function removeComponent($_id) {
-			$exists = $this->getComponentById($_id);
-			if (!$exists) return false;
-
-			$creatorId = $this->getUserId();
-			if (!$creatorId) return "E_noAuth";
-			if ($exists['creatorId'] != $creatorId) return "E_notAllowed";
-
-
-			return $this->DB->execute(
-				"DELETE FROM $this->DBTableName WHERE componentId=? LIMIT 1", 
-				array($exists['componentId'])
-			);
+			return $GLOBALS['DBHelper']->removeComponent($_id);
 		}
 
 	}

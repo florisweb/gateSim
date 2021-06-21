@@ -3,8 +3,8 @@
 function _ComponentManager() {
 
 	this.addComponent = async function(_component) {
-		let result = Server.addComponent(_component);
-		if (!response) return;
+		let result = await Server.updateComponent(_component);
+		if (!result) return;
 		SideBar.componentList.updateComponentList();
 	}
 
