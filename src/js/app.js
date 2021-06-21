@@ -1,6 +1,6 @@
 
 
-
+let Server;
 let HitBoxManager;
 let World;
 let Renderer;
@@ -11,7 +11,8 @@ let SideBar;
 let Popup;
 
 const App = new function() {
-	this.setup = function() {
+	this.setup = async function() {
+		Server 				= new _Server();
 		HitBoxManager 		= new _HitBoxManager();
 		Builder 			= new _Builder();
 		ComponentManager 	= new _ComponentManager();
@@ -25,6 +26,8 @@ const App = new function() {
   		World.setup();
 
   		Renderer.setup();
+
+  		await Server.getComponentList()
   		SideBar.setup();
   	}
 }

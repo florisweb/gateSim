@@ -13,14 +13,13 @@ function _SideBar_componentList() {
   }
 
   this.setup = function() {
-    this.setComponentList(ComponentManager.components);
+    this.updateComponentList();
   }
 
 
-  this.setComponentList = function(_list) {
+  this.updateComponentList = function() {
     HTML.componentHolder.innerHTML = '';
-
-    for (let component of _list) this.addComponent(component);
+    for (let component of Server.components) this.addComponent(component);
   }
 
 
@@ -30,10 +29,11 @@ function _SideBar_componentList() {
 
     element.innerHTML =   "<div class='titleHolder text'></div>" + 
                           "<img class='icon optionIcon clickable' src='images/icons/optionIcon.png'>" + 
-                          "<div class='text subText'>By: Floris</div>";
+                          "<div class='text subText'>Native</div>";
                           // "<canvas class='componentPreview'></canvas>";
-    
     setTextToElement(element.children[0], _component.name);
+    if (_component.creatorName) setTextToElement(element.children[2], 'By: ' + _component.creatorName);
+
     element.addEventListener('click', function(_e) {
       if (_e.target.classList.contains('optionIcon')) return World.import(_component);
       World.curComponent.addComponent(ComponentManager.importComponent(_component));

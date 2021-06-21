@@ -4,6 +4,7 @@
 
 	$GLOBALS["PM"]->includePacket("DB", "1.0");
 	$GLOBALS["PM"]->includePacket("SESSION", "1.0");
+	$GLOBALS["PM"]->includePacket("USER", "1.1");
 
 	global $DBHelper;
 	$DBHelper = new _databaseHelper;
@@ -36,6 +37,10 @@
 		}
 
 		private function DBToExportComponent($_component) {
+			$creatorName = '--';
+			$creator = $GLOBALS['USER']->getById($_component["creatorId"]);
+			if ($creator) $creatorName = $creator['name'];
+
 			return array(
 				"name" 			=> $_component["name"],
 				"componentId" 	=> $_component["componentId"],
@@ -44,7 +49,8 @@
 				"inputs" 		=> json_decode($_component["inputs"], true),
 				"outputs" 		=> json_decode($_component["outputs"], true),
 				"content" 		=> json_decode($_component["content"], true),
-				"creatorId" 	=> $_component["creatorId"],
+				"creatorName" 	=> $creatorName,
+				'creatorId'		=> $_component["creatorId"]
 			);
 		}
 
@@ -117,7 +123,7 @@
 
 
 
-	echo "<pre>";
+	// echo "<pre>";
 	// var_dump($DBHelper->updateComponent(array(
 	// 	"name" 		=> 'Or gate, or is it?',
 	// 	"id"		=> 123,
@@ -158,7 +164,7 @@
 	// 		)
 	// 	)
 	// )));
-	var_dump($DBHelper->getAllComponents());
+	// var_dump($DBHelper->getAllComponents());
 	// var_dump($DBHelper->removeComponent(7));
 
 ?>

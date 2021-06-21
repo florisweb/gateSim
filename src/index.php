@@ -25,6 +25,7 @@
 			<canvas id="worldCanvas" width="800" height="600"></canvas>
 		</div>
 	
+		<script type="text/javascript" src="/JS/request2.js"></script>
 		<script type="text/javascript" src="main_min.js"></script>
 		
 	</body>

@@ -1,27 +1,11 @@
 
 
 function _ComponentManager() {
-	this.components = [
-		JSON.parse("{\"position\":[0,0],\"name\":\"Nand gate\",\"id\":4461559745884998,\"componentId\":\"nandgate\",\"inputs\":[{\"name\":\"input 1\"},{\"name\":\"input 2\"}],\"outputs\":[{\"name\":\"output\"}],\"content\":[]}"),
-	];
 
-	if (localStorage.components) this.components = this.components.concat(JSON.parse(localStorage.components));
-
-	this.getComponentByCompId = function(_compId) {
-		for (let component of this.components)
-		{
-			if (component.componentId != _compId) continue;
-			return component;
-		}
-		return false;
-	}
-
-
-
-	this.addComponent = function(_component) {
-		this.components.push(_component);
-		SideBar.componentList.setComponentList(this.components);
-		localStorage.components = JSON.stringify(Object.assign([], this.components).splice(1, Infinity));
+	this.addComponent = async function(_component) {
+		let result = Server.addComponent(_component);
+		if (!response) return;
+		SideBar.componentList.updateComponentList();
 	}
 
 
@@ -39,7 +23,7 @@ function _ComponentManager() {
 			id: 				_data.id,
 			name: 				_data.name,
 			componentId: 		_data.componentId,
-			position: 			new Vector(..._data.position),
+			position: 			_data.position ? new Vector(..._data.position) : new Vector(0, 0),
 			inputs:  			_data.inputs,
 			outputs:  			_data.outputs
 		});
@@ -77,7 +61,7 @@ function _ComponentManager() {
 
 	
 	this.componentReferenceToComponent = function(_reference, _isWorldComponent, _isRoot) {
-		let componentData = this.getComponentByCompId(_reference.componentId);
+		let componentData = Server.getComponentById(_reference.componentId);
 		if (!componentData) return console.warn('Component not loaded:', _reference.componentId);
 		let comp = this.importComponent(componentData, _isWorldComponent, _isRoot);
 		comp.position 	= new Vector(..._reference.position);
