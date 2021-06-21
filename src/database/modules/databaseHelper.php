@@ -92,13 +92,14 @@
 
 			
 			$result = $this->DB->execute(
-				"UPDATE $this->DBTableName SET name=?, inputs=?, outputs=?, content=?, internalId=?", 
+				"UPDATE $this->DBTableName SET name=?, inputs=?, outputs=?, content=?, internalId=? WHERE componentId=?", 
 				array(
 					$_component["name"],
 					json_encode($_component["inputs"]),
 					json_encode($_component["outputs"]),
 					json_encode($_component["content"]),
 					$_component["id"],
+					$exists['componentId']
 				)
 			);
 			return $this->getComponentById($exists['componentId']);

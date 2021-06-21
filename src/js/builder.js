@@ -24,7 +24,15 @@ function _Builder() {
     }
   }
 
+  let curEditComponent = false;
+  this.editComponent = function(_component) {
+    World.import(_component);
+    curEditComponent = _component
+    HTML.nameHolder.value = _component.name;
+  }
+
   this.newChip = function(_inputs = 2, _outputs = 1) {
+    curEditComponent = false;
     this.cancelBuildingLine();
     World.clear(_inputs, _outputs);
   }
@@ -34,13 +42,14 @@ function _Builder() {
   }
 
 
-  this.packageComponent = function() {
+  this.packageComponent = async function() {
     let data            = World.curComponent.export();
     data.name           = HTML.nameHolder.value;
     data.componentId    = newId();
     HTML.nameHolder.value = null;
-    ComponentManager.addComponent(data);
-    return data;
+
+    if (curEditComponent) data.componentId = curEditComponent.componentId;
+    return await ComponentManager.addComponent(data);
   }
 
 

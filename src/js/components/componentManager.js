@@ -5,7 +5,7 @@ function _ComponentManager() {
 	this.addComponent = async function(_component) {
 		let result = await Server.updateComponent(_component);
 		if (!result) return;
-		SideBar.componentList.updateComponentList();
+		await SideBar.componentList.updateComponentList();
 	}
 
 

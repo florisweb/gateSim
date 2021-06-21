@@ -17,7 +17,7 @@ function _SideBar_componentList() {
     'Edit', 
     function() {
       if (!CurMenuComponent) return;
-      World.import(CurMenuComponent);
+      Builder.editComponent(CurMenuComponent);
       Menu.close();
     }, 
     'images/icons/changeIconDark.png'
