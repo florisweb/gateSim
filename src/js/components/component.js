@@ -197,9 +197,7 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 
 
 function LineComponent({from, to}) {
-	BaseComponent.call(this, {
-		name: 'line',
-	});
+	BaseComponent.call(this, {});
 	this.type = 'line';
 	
 	this.from = from;
@@ -246,7 +244,6 @@ function LineComponent({from, to}) {
 
 	this.export = function() {
 		let item = {
-			name: this.name,
 			type: this.type,
 			from: {
 				parentId: 	this.from.parent.id,
