@@ -29,8 +29,9 @@
 				</div>
 			</div>
 			
-			<div class='page hide'>
-				hey
+			<div class='page searchPage hide'>
+				<input placeholder="Search..." class='text inputField'>
+				<div class='componentHolder'></div>
 			</div>
 		</div>
 		<div id='mainContent'>

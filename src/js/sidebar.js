@@ -4,14 +4,16 @@ function _SideBar() {
     this.componentList.setup();
   }
 
-  this.searchPage = new _SideBar_page(1);
+  this.searchPage = new _SideBar_searchPage();
   this.componentPage = new _SideBar_page(0);
 
   this.curPage = this.componentPage;
+
+  this.renderer = new _SideBar_renderer();
 }
 
-function _SideBar_page(_index) {
-  const Index = _index;
+function _SideBar_page({index, onOpen}) {
+  const Index = index;
   const HTML = {
     pages: $('#sideBar .page'),
     page: $('#sideBar .page')[Index],
@@ -23,6 +25,58 @@ function _SideBar_page(_index) {
     for (let page of HTML.pages) page.classList.add('hide');
     HTML.page.classList.remove('hide');
     SideBar.curPage = this;
+
+    try {
+      onOpen(...arguments);
+    } catch (e) {console.warn('[!] Error while opening a tab:', this, e)}
+  }
+}
+
+
+
+
+
+function _SideBar_searchPage() {
+  let This = this;
+  _SideBar_page.call(this, {
+      index: 1,
+      onOpen: onOpen
+  });
+  const HTML = {
+    page: $('#sideBar .page.searchPage')[0],
+    input: $('#sideBar .page.searchPage .inputField')[0],
+    componentHolder: $('#sideBar .page.searchPage .componentHolder')[0]
+  }
+  HTML.input.oninput = function() {
+    This.search(this.value);
+  }
+
+  function onOpen() {
+    HTML.input.value = null;
+    HTML.input.focus();
+    setComponentList(Server.components);
+  }
+
+
+  this.search = function(_value) {
+    let results = [];
+    for (let item of Server.components)
+    {
+      item.score = similarity(item.name, _value);
+      if (item.score < .5) continue;
+      results.push(item);
+    }
+    results.sort(function(a, b) {
+      return a.score < b.score;
+    });
+
+    if (!_value) results = Server.components;
+    setComponentList(results);
+  }
+
+  function setComponentList(_list) {
+    HTML.componentHolder.innerHTML = '';
+    for (let item of _list) HTML.componentHolder.append(SideBar.renderer.renderComponent(item));
   }
 }
 
@@ -43,6 +97,37 @@ function _SideBar_componentList() {
     componentHolder: $('#sideBar .componentList.favorites .componentHolder')[0],
   }
 
+  for (let header of HTML.headers) header.addEventListener(
+    'click', 
+    function() {
+      if (this.children[0].classList.contains('close'))
+      {
+        this.children[0].classList.remove('close');
+        this.parentNode.children[1].classList.remove('hide');
+      } else {
+        this.children[0].classList.add('close');
+        this.parentNode.children[1].classList.add('hide');
+      }
+    }
+  );
+
+
+
+  this.setup = function() {
+    this.updateComponentList();
+  }
+
+  this.updateComponentList = async function() {
+    await Server.getComponentList();
+    HTML.componentHolder.classList.remove('hide');
+    HTML.componentHolder.innerHTML = '';
+    for (let component of Server.components) HTML.favorites.componentHolder.append(SideBar.renderer.renderComponent(component));
+  }
+}
+
+
+
+function _SideBar_renderer() {
   let Menu = OptionMenu.create();
   let CurMenuComponent = false;
   Menu.addOption(
@@ -66,39 +151,8 @@ function _SideBar_componentList() {
   );
 
 
-  for (let header of HTML.headers) header.addEventListener(
-    'click', 
-    function() {
-      if (this.children[0].classList.contains('close'))
-      {
-        this.children[0].classList.remove('close');
-        this.parentNode.children[1].classList.remove('hide');
-      } else {
-        this.children[0].classList.add('close');
-        this.parentNode.children[1].classList.add('hide');
-      }
-    }
-  );
 
-
-
-
-
-
-  this.setup = function() {
-    this.updateComponentList();
-  }
-
-
-  this.updateComponentList = async function() {
-    await Server.getComponentList();
-    HTML.componentHolder.classList.remove('hide');
-    HTML.componentHolder.innerHTML = '';
-    for (let component of Server.components) this.addComponent(component);
-  }
-
-
-  this.addComponent = function(_component) {
+  this.renderComponent = function(_component) {
     let element = document.createElement('div');
     element.className = 'component noselect';
 
@@ -119,10 +173,6 @@ function _SideBar_componentList() {
       World.curComponent.addComponent(ComponentManager.importComponent(_component));
     });
 
-
-
-
-    HTML.componentHolder.append(element);
+    return element;
   }
-
 }
