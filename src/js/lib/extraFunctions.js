@@ -2,7 +2,12 @@ function $() {
   return document.querySelectorAll(...arguments);
 }
 
-function newId() {return parseInt(Math.round(Math.random() * 100000000) + "" + Math.round(Math.random() * 100000000));}
+// function newId() {return parseInt(Math.round(Math.random() * 100000000) + "" + Math.round(Math.random() * 100000000));}
+let prevId = 0;
+function newId() {
+  prevId++
+  return 'ID' + prevId;
+}
 
 function setTextToElement(element, text) {
   element.innerHTML = "";

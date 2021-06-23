@@ -199,7 +199,7 @@ function _ComponentManager() {
 			// console.log(_component.content);
 			_component.content = [];
 
-			for (let item of content) _component.addComponent(item);
+			for (let item of content) _component.addComponent(item, true);
 
 			return _component;
 		}
@@ -237,27 +237,54 @@ function _ComponentManager() {
 
 
 	this.optimizeComponent = function(_component) {
+		return new Promise(async function (resolve) {
+
+
 		// let component = this.flattenComponent(Object.assign({}, _component))
 		let component = Object.assign({}, _component);
 		let originalComponentLength = component.content.length;
+		let newLines = [];
+		let nodesToBeRemoved = [];
+		let lockedNode = false;
+
+
 		for (let i = originalComponentLength - 1; i >= 0; i--)
 		{
 			let node = component.content[i];
-			if (!node.isNode) continue;
+			if (!node.isNode) 
+			{
+				if (node.type != 'line') continue;
+				let line = new LineComponent({
+					from: node.from,
+					to: node.to
+				});
+				newLines.push(line);
+
+				continue;
+			};
+
+			if (node.toBeRemoved) continue;
+			if (node.locked) 
+			{
+				console.warn('Node is locked', i);
+				continue;
+			}
 
 			if (node.toLines.length == 1)
 			{
 				for (let fromLine of node.fromLines)
 				{
+					console.log('lock', lockNode(fromLine.to));
 					let line = new LineComponent({
 						from: node.toLines[0].from,
 						to: fromLine.to
 					});
-					component.addComponent(line);
-					line.activate();
+					newLines.push(line);
 				}
 
-				node.remove();
+				// node.remove();
+				node.toBeRemoved = true;
+				nodesToBeRemoved.push(node);
 				continue;
 			}
 
@@ -265,26 +292,73 @@ function _ComponentManager() {
 			{
 				for (let toLine of node.toLines)
 				{
+					console.log('lock', lockNode(toLine.from));
 					let line = new LineComponent({
 						from: toLine.from,
 						to: node.fromLines[0].to
 					});
-					component.addComponent(line);
-					line.activate();
+					newLines.push(line);
 				}
-				node.remove();
+				// node.remove();
+				node.toBeRemoved = true;
+				nodesToBeRemoved.push(node);
 				continue;
 			}
 		}
 
-		return component;
-	}
+
+		for (let i = component.content.length - 1; i >= 0; i--)
+		{
+			if (component.content[i].type != 'line') continue;
+			component.content[i].remove();
+		}
+
+		setTimeout(function () {
+			console.log('remove', nodesToBeRemoved);
+			for (let i = nodesToBeRemoved.length - 1; i >= 0; i--)
+			{
+				nodesToBeRemoved[i].remove();
+			}
+		}, 10);
+
+		for (let line of newLines) 
+		{
+			component.addComponent(line);
+		}
+
+		function lockNode(_node) {
+			for (let i = 0; i < component.content.length; i++)
+			{
+				if (!component.content[i].isNode) continue;
+				if (component.content[i].id != _node.id) continue;
+				component.content[i].locked = true;	
+				lockedNode = true;
+				return true;
+			}
+		}
+
+		function lineIsFreeNodeLine(_line) {
+			return !_line.to.isInOutPut && !_line.from.isInOutPut;
+		}
 
 
-	function addLine(_config = {from, to}, _component) {
-		let line = new LineComponent(_config);
-		line.parent = _component;
-		line.activate();
-		return line;
+
+
+		for (let node of component.content)
+			{
+				if (!node.isNode) continue;
+				delete node.locked;
+			}
+			
+		if (lockedNode) 
+		{
+			setTimeout(async function () {
+				console.warn('there are still locked nodes, trying again...');
+				resolve(await ComponentManager.optimizeComponent(component));
+			}, 20);
+		}
+
+			resolve(component);
+		});
 	}
 }

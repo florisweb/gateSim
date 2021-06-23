@@ -152,11 +152,11 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 	}
 
 
-	this.addComponent = function(_component) {
+	this.addComponent = function(_component, _forcedActivation = false) {
 		_component.parent = this;
 		this.content.push(_component);
 		setTimeout(function () {
-			_component.activate();
+			_component.activate(_forcedActivation);
 		}, 0);
 	}
 
@@ -208,7 +208,10 @@ function LineComponent({from, to}) {
 	this.from = from;
 	this.to = to;
 
-	this.activate = function() {
+	let activated = false
+	this.activate = function(_forcedActivation) {
+		if (activated && !_forcedActivation) return console.warn('Already activated', this);
+		activated = true;
 		if (this.from) this.from.fromLines.push(this);
 		if (this.to) this.to.toLines.push(this);
 	}
