@@ -118,6 +118,13 @@ function _ComponentManager() {
 			if (isRoot) return _component;
 			_component.position = _component.getPosition();
 			_component.parent = _masterParent;
+			let nodes = [..._component.inputs, ..._component.outputs];
+			for (let node of nodes) 
+			{
+				node.fromLines = [];
+				node.toLines = [];
+			}
+
 			return [_component];
 		}
 
@@ -187,24 +194,12 @@ function _ComponentManager() {
 		{
 			// for (let i = _component.content.length - 1; i >= 0; i--)
 			// {
-			// 	if (_component.content[i].type == 'line') 
-			// 	{
-			// 		_component.content[i].lineNeedsUpdate = true;
-			// 		continue;
-			// 	}
-			// 	_component.content.splice(i, 1);
+			// 	_component.content[i].remove();
 			// }
+			// console.log(_component.content);
 			_component.content = [];
 
 			for (let item of content) _component.addComponent(item);
-
-			// for (let i = 0; i < _component.content.length; i++)
-			// {
-			// 	if (_component.content[i].type != 'line' || !_component.content[i].lineNeedsUpdate) continue;
-			// 	_component.content[i].from = getNodeFromContentById(content, _component.content[i].from.id, _component);
-			// 	_component.content[i].to = getNodeFromContentById(content, _component.content[i].to.id, _component);
-			// 	if (!_component.content[i].to || !_component.content[i].from) console.warn('[!] FlattenComponent.line: from/to node not found', _component.content[i]);
-			// }
 
 			return _component;
 		}

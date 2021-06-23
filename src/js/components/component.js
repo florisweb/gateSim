@@ -1,7 +1,7 @@
 
-window.instantRun = false;
 window.runSpeed = 0;
-
+window.runs = 0;
+window.debug = false;
 const NandGateComponentId = -1;
 function NandGateComponent({position, id}) {
 	let This = this;
@@ -14,7 +14,8 @@ function NandGateComponent({position, id}) {
 		outputs: [{name: ''}],
 	});
 
-  	this.inputs[0].run = this.inputs[1].run = function(_index) {
+  	this.inputs[0].run = this.inputs[1].run = function(_index, _fullRun) {
+  		window.runs++;
   		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -22,8 +23,9 @@ function NandGateComponent({position, id}) {
 			this.turnedOn = true;
 			break;
 		}
+		if (window.debug) console.log(_index, 'run: ' + (this.isInput ? 'input' : 'output') + ' ' + this.index + " of " + this.parent.name);
   		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
-  		for (let line of this.parent.outputs[0].fromLines) line.to.run(_index + 1);
+  		for (let line of this.parent.outputs[0].fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
   	};
 }
 
@@ -293,6 +295,7 @@ function Node({turnedOn, name}, _parent, _id) {
 	this.name		= name;
 
 	this.run = function(_index, _fullRun = false) {
+		window.runs++;
 		let prevStatus = !!this.turnedOn;
 		this.turnedOn = false;
 		for (let line of this.toLines)
@@ -301,15 +304,10 @@ function Node({turnedOn, name}, _parent, _id) {
 			this.turnedOn = true;
 			break;
 		}
-		console.log('run', _index, 'don\'t end: ', prevStatus == this.turnedOn && !_fullRun);
+		if (window.debug) console.log(_index, 'run: ' + (this.isInput ? 'input' : 'output') + ' ' + this.index + " of " + this.parent.name , 'don\'t end: ', prevStatus != this.turnedOn || _fullRun);
 		if (prevStatus == this.turnedOn && !_fullRun) return;
 
-		if (window.instantRun)
-		{
-			for (let line of this.fromLines) line.to.run(_index + 1, _fullRun);
-		} else {
-			for (let line of this.fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
-		}
+		for (let line of this.fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
 	}
 
 	this.remove = function(_removeDepth = 0) {
@@ -385,8 +383,8 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 		this.turnedOn = _status;
 	}
 
-	this.run = function() {
-		for (let line of this.fromLines) line.to.run(1);
+	this.run = function(_fullRun = false) {
+		for (let line of this.fromLines) line.to.run(1, _fullRun);
 	}
 
 	let drawNode = this.draw;

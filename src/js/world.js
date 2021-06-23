@@ -43,10 +43,10 @@ function _World() {
   }
 
 
-  this.run = function() {
+  this.run = function(_fullRun = false) {
     for (let input of this.curComponent.inputs)
     {
-      input.run(0, false);
+      input.run(_fullRun);
     }
   }
 
