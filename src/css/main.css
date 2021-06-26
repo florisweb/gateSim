@@ -92,7 +92,6 @@ html, body {
     left:  0;
     width: calc(100% - 10px);
     height: calc(100vh - 10px * 2);
-    border: 1px solid blue;
 
     padding:  10px;
     padding-right: 0;
@@ -105,6 +104,47 @@ html, body {
     opacity: 0;
     margin-left: -30px;
 }
+
+
+#sideBar .page.searchPage .inputField {
+    width:  calc(100% - 10px);
+    height: 20px;
+    line-height: 20px;
+    border: none;
+
+    margin-bottom: 5px;
+    border-bottom: 1px solid #444;
+
+    color: #ccc;
+}
+
+
+
+#sideBar .page .button.newComponentButton {
+    float:  left;
+    width:  121px;
+    text-align: center;
+}
+
+#sideBar .page .icon.searchIcon {
+    position: relative;
+    float:  right;
+    right:  10px;
+    height: 20px;
+    padding:  5px;
+    width: auto;
+    opacity: .7;
+
+    transition: opacity .3s;
+}
+#sideBar .page .icon.searchIcon:hover {
+    opacity: 1;
+}
+
+
+
+
+
 
 
 #sideBar .header {
@@ -147,7 +187,6 @@ html, body {
     overflow-y: auto;
     overflow-x: hidden;
     transition: all 0.45s;
-    border:  1px solid red;
 }
 
 #sideBar .componentHolder.hide {
@@ -314,11 +353,6 @@ html, body {
 
 
 
-
-
-.icon {
-    opacity: 0.4;
-}
 
 
 .clickable {cursor: pointer;}

@@ -1,13 +1,12 @@
 function _SideBar() {
-  this.componentList = new _SideBar_componentList();
   this.setup = function() {
-    this.componentList.setup();
+    this.homePage.setup();
   }
 
   this.searchPage = new _SideBar_searchPage();
-  this.componentPage = new _SideBar_page(0);
+  this.homePage = new _SideBar_homePage();
 
-  this.curPage = this.componentPage;
+  this.curPage = this.homePage;
 
   this.renderer = new _SideBar_renderer();
 }
@@ -29,6 +28,57 @@ function _SideBar_page({index, onOpen}) {
     try {
       onOpen(...arguments);
     } catch (e) {console.warn('[!] Error while opening a tab:', this, e)}
+  }
+}
+
+
+function _SideBar_homePage() {
+  let This = this;
+  _SideBar_page.call(this, {
+      index: 0,
+      onOpen: onOpen
+  });
+  let HTML = {
+    headers: $('#sideBar .header'),
+
+    favorites: {
+      componentHolder: $('#sideBar .componentList.favorites .componentHolder')[0],
+    },
+
+    myComponents: {
+      componentHolder: $('#sideBar .componentList.myComponents .componentHolder')[0],
+    },
+    componentHolder: $('#sideBar .componentList.favorites .componentHolder')[0],
+  }
+
+  for (let header of HTML.headers) header.addEventListener(
+    'click', 
+    function() {
+      if (this.children[0].classList.contains('close'))
+      {
+        this.children[0].classList.remove('close');
+        this.parentNode.children[1].classList.remove('hide');
+      } else {
+        this.children[0].classList.add('close');
+        this.parentNode.children[1].classList.add('hide');
+      }
+    }
+  );
+
+  function onOpen() {
+    This.updateComponentList();
+  }
+  
+
+  this.setup = function() {
+    this.updateComponentList();
+  }
+
+  this.updateComponentList = async function() {
+    await Server.getComponentList();
+    HTML.componentHolder.classList.remove('hide');
+    HTML.componentHolder.innerHTML = '';
+    for (let component of Server.components) HTML.favorites.componentHolder.append(SideBar.renderer.renderComponent(component));
   }
 }
 
@@ -82,48 +132,6 @@ function _SideBar_searchPage() {
 
 
 
-
-function _SideBar_componentList() {
-  let HTML = {
-    headers: $('#sideBar .header'),
-
-    favorites: {
-      componentHolder: $('#sideBar .componentList.favorites .componentHolder')[0],
-    },
-
-    myComponents: {
-      componentHolder: $('#sideBar .componentList.myComponents .componentHolder')[0],
-    },
-    componentHolder: $('#sideBar .componentList.favorites .componentHolder')[0],
-  }
-
-  for (let header of HTML.headers) header.addEventListener(
-    'click', 
-    function() {
-      if (this.children[0].classList.contains('close'))
-      {
-        this.children[0].classList.remove('close');
-        this.parentNode.children[1].classList.remove('hide');
-      } else {
-        this.children[0].classList.add('close');
-        this.parentNode.children[1].classList.add('hide');
-      }
-    }
-  );
-
-
-
-  this.setup = function() {
-    this.updateComponentList();
-  }
-
-  this.updateComponentList = async function() {
-    await Server.getComponentList();
-    HTML.componentHolder.classList.remove('hide');
-    HTML.componentHolder.innerHTML = '';
-    for (let component of Server.components) HTML.favorites.componentHolder.append(SideBar.renderer.renderComponent(component));
-  }
-}
 
 
 

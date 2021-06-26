@@ -154,6 +154,7 @@ function _KeyHandler() {
 			keys: ["Escape"], 
 			event: function () {
 				Builder.cancelBuildingLine();
+				if (SideBar.curPage == SideBar.searchPage) return SideBar.homePage.open();
 			},
 			ignoreIfInInputField: false
 		},

@@ -10,7 +10,10 @@
 	<body class='noselect'>		
 		<div id='sideBar'>
 			<div class='page'>
-				<div class='button bDefault bBoxy text' onclick='Builder.newChip()'>+ New Component</div>
+				<div class='button bDefault bBoxy text newComponentButton' onclick='Builder.newChip()'>New Component</div>
+				<img src='images/icons/searchIcon.png' class='clickable icon searchIcon' onclick='SideBar.searchPage.open()'>
+				<br>	
+				<br>
 				<br>
 				<div class='componentList favorites'>
 					<div class="header clickable">
@@ -30,7 +33,7 @@
 			</div>
 			
 			<div class='page searchPage hide'>
-				<input placeholder="Search..." class='text inputField'>
+				<input placeholder="Search..." spellcheck='false' class='text inputField'>
 				<div class='componentHolder'></div>
 			</div>
 		</div>
