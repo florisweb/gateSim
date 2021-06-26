@@ -76,7 +76,6 @@ function _SideBar_homePage() {
 
   this.updateComponentList = async function() {
     await Server.getComponentList();
-    HTML.componentHolder.classList.remove('hide');
     HTML.componentHolder.innerHTML = '';
     for (let component of Server.components) HTML.favorites.componentHolder.append(SideBar.renderer.renderComponent(component));
   }

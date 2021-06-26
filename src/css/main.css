@@ -397,6 +397,9 @@ html, body {
     font-weight: bolder !important;
 }
 
+.icon {
+    opacity: .4;
+}
 
 
 

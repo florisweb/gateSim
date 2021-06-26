@@ -20,7 +20,7 @@
 						<img src="images/icons/dropDownIcon.png" class="headerIcon dropDownButton">
 						<div class="text headerText">Favourites</div>
 					</div>
-					<div class='componentHolder hide'></div>
+					<div class='componentHolder'></div>
 				</div>
 
 				<div class='componentList myComponents'>
@@ -28,7 +28,7 @@
 						<img src="images/icons/dropDownIcon.png" class="headerIcon dropDownButton">
 						<div class="text headerText">All Components</div>
 					</div>
-					<div class='componentHolder hide'></div>
+					<div class='componentHolder'></div>
 				</div>
 			</div>
 			

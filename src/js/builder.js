@@ -33,6 +33,8 @@ function _Builder() {
 
   this.newChip = function(_inputs = 2, _outputs = 1) {
     curEditComponent = false;
+    HTML.nameHolder.value = null;
+    HTML.nameHolder.focus();
     this.cancelBuildingLine();
     World.clear(_inputs, _outputs);
   }
