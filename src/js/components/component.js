@@ -2,6 +2,7 @@
 window.runSpeed = 0;
 window.runs = 0;
 window.debug = false;
+window.instantRun = false;
 const NandGateComponentId = -1;
 function NandGateComponent({position, id}) {
 	let This = this;
@@ -11,10 +12,11 @@ function NandGateComponent({position, id}) {
 		id: id,
 		componentId: NandGateComponentId,
 		inputs: [{name: ''}, {name: ''}],
-		outputs: [{name: ''}],
+		outputs: [{name: '', turnedOn: true}],
 	});
 
   	this.inputs[0].run = this.inputs[1].run = function(_index, _fullRun) {
+  		return;
   		window.runs++;
   		this.turnedOn = false;
 		for (let line of this.toLines)
@@ -25,8 +27,26 @@ function NandGateComponent({position, id}) {
 		}
 		if (window.debug) console.log(_index, 'run: ' + (this.isInput ? 'input' : 'output') + ' ' + this.index + " of " + this.parent.name);
   		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
-  		for (let line of this.parent.outputs[0].fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
+	  		
+  		if (instantRun)
+  		{
+  			for (let line of this.parent.outputs[0].fromLines) line.to.run(_index + 1, _fullRun);
+  		} else {
+  			for (let line of this.parent.outputs[0].fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
+  		}
   	};
+
+
+  	this.inputs[0].run2 = this.inputs[1].run2 = function(_index, _fullRun) {
+  		this.turnedOn = false;
+		for (let line of this.toLines)
+		{
+			if (!line.from.turnedOn) continue;
+			this.turnedOn = true;
+			break;
+		}
+  		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
+  	}
 }
 
 
@@ -120,7 +140,7 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 		for (let output of this.outputs) output.draw();
 			
 		Renderer.drawLib.drawCenteredText({
-			text: this.name,
+			text: this.name + " id: " + this.id,
 			position: this.getPosition().copy().add(this.size.copy().scale(.5)),
 			fontSize: 15,
 			color: '#fff'
@@ -155,9 +175,7 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 	this.addComponent = function(_component, _forcedActivation = false) {
 		_component.parent = this;
 		this.content.push(_component);
-		setTimeout(function () {
-			_component.activate(_forcedActivation);
-		}, 0);
+		_component.activate(_forcedActivation);
 	}
 
 	this.getComponentById = function(_id) {
@@ -298,6 +316,7 @@ function Node({turnedOn, name}, _parent, _id) {
 	this.name		= name;
 
 	this.run = function(_index, _fullRun = false) {
+		return;
 		window.runs++;
 		let prevStatus = !!this.turnedOn;
 		this.turnedOn = false;
@@ -310,8 +329,26 @@ function Node({turnedOn, name}, _parent, _id) {
 		if (window.debug) console.log(_index, 'run: ' + (this.isInput ? 'input' : 'output') + ' ' + this.index + " of " + this.parent.name , 'don\'t end: ', prevStatus != this.turnedOn || _fullRun);
 		if (prevStatus == this.turnedOn && !_fullRun) return;
 
-		for (let line of this.fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
+		if (instantRun)
+  		{
+			for (let line of this.fromLines) line.to.run(_index + 1, _fullRun);
+  		} else {
+			for (let line of this.fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
+  		}
 	}
+
+
+	this.run2 = function() {
+		this.turnedOn = false;
+		for (let line of this.toLines)
+		{
+			if (!line.from.turnedOn) continue;
+			this.turnedOn = true;
+			break;
+		}
+	}
+
+
 
 	this.remove = function(_removeDepth = 0) {
 		HitBoxManager.unregister(this.hitBoxId);
@@ -350,6 +387,12 @@ function Node({turnedOn, name}, _parent, _id) {
 			isInput: this.isInput,
 			turnedOn: this.turnedOn
 		});
+		Renderer.drawLib.drawCenteredText({
+			text: this.id.substr(4, 100),
+			position: this.getPosition(),
+			fontSize: 10,
+			color: '#0ff'
+		})
 	}
 }
 

@@ -5,7 +5,7 @@ function _ComponentManager() {
 	this.addComponent = async function(_component) {
 		let result = await Server.updateComponent(_component);
 		if (!result) return;
-		await SideBar.componentList.updateComponentList();
+		await SideBar.homePage.updateComponentList();
 	}
 
 
@@ -362,3 +362,89 @@ function _ComponentManager() {
 		});
 	}
 }
+
+
+
+
+
+
+
+
+function _Runner() {
+	let This = this;
+	this.runTree = new RunTree();
+	const maxDepth = 100;
+
+	this.createRunTree = function(_component) {
+		this.runTree = new RunTree()
+		recursiveRunTreeGenerator(_component.inputs, 0);
+		this.runTree.visualize();
+	}
+
+
+	function recursiveRunTreeGenerator(_outputs, _depth = 0) {
+		if (_depth > maxDepth) return console.warn('runner.createRunTree: Maxdepth reached.', _depth, maxDepth);
+		if (!This.runTree[_depth]) This.runTree.addLayer(_depth);
+
+		for (let node of _outputs)
+		{
+			for (let line of node.fromLines)
+			{
+				This.runTree[_depth].addNode(line.to);
+				recursiveRunTreeGenerator(line.to.parent.outputs, _depth + 1);
+			}
+		}
+	}
+
+
+	function RunTree() {
+		let arr = [];
+		arr.addLayer = function(_index) {
+			let subArr = [];
+			subArr.addNode = function(_node) {
+				for (let i = 0; i < this.length; i++)
+				{
+					if (_node.id == this[i].id) return;
+				}
+				this.push(_node);
+			}
+
+			subArr.run = function() {
+				return new Promise(function (resolve) {
+					setTimeout(function() {
+						console.log('Run layer', _index);
+						for (let i = 0; i < subArr.length; i++)
+						{
+							subArr[i].run2();
+						}
+						resolve();
+					}, runSpeed);
+				});
+			}
+
+			arr[_index] = subArr;
+		}
+
+		arr.visualize = function() {
+			console.info('=== Visualizing ===');
+			for (let i = 0; i < this.length; i++)
+			{
+				console.info("[" + i + "]: ", this[i].map(r => r.id));
+			}
+		}
+
+		arr.run = async function() {
+			for (let i = 0; i < this.length; i++)
+			{
+				await arr[i].run();
+			}
+		}
+
+		return arr;
+	}
+
+
+}
+
+
+

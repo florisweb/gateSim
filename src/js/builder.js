@@ -138,7 +138,7 @@ function _Builder() {
           if (removedLine) continue;
 
           World.curComponent.addComponent(this.curBuildLines[i]);
-          this.curBuildLines[i].to.run(0);
+          Builder.curBuildLines[i].to.run(0);
         }
 
         this.curBuildLines = [];

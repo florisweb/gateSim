@@ -151,7 +151,7 @@ function _SideBar_renderer() {
     async function() {
       if (!CurMenuComponent) return;
       await Server.removeComponent(CurMenuComponent.componentId);
-      SideBar.componentList.updateComponentList();
+      SideBar.homePage.updateComponentList();
       Menu.close();
     }, 
     'images/icons/removeIcon.png'

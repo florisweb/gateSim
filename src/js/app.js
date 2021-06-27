@@ -9,6 +9,7 @@ let Builder;
 let ComponentManager;
 let SideBar;
 let Popup;
+let Runner;
 
 const App = new function() {
 	this.setup = async function() {
@@ -17,6 +18,7 @@ const App = new function() {
 		Builder 			= new _Builder();
 		ComponentManager 	= new _ComponentManager();
 		SideBar 			= new _SideBar();
+		Runner				= new _Runner();
 
   		World 				= new _World();
   		Renderer 			= new _Renderer();
