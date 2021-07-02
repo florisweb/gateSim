@@ -475,9 +475,9 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 				strokeColor: '#222',
 				fillColor: '#444'
 			});
-			Renderer.drawLib.drawText({
+			Renderer.drawLib.drawCenteredText({
 				text: 'Toggle',
-				position: position.copy().add(new Vector(5, height * .7)),
+				position: position.copy().add(new Vector(width / 2, height / 2)),
 				color: '#ddd',
 				fontSize: 12
 			});
