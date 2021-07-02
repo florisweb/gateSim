@@ -377,22 +377,30 @@ function _Runner() {
 
 	this.createRunTree = function(_component) {
 		this.runTree = new RunTree()
-		recursiveRunTreeGenerator(_component.inputs, 0);
+		for (let input of _component.inputs) 
+		{
+			for (let line of input.fromLines) recursiveRunTreeGenerator(line.to, 0);
+		}
+
 		this.runTree.visualize();
 	}
 
 
-	function recursiveRunTreeGenerator(_outputs, _depth = 0) {
+	function recursiveRunTreeGenerator(_node, _depth = 0) {
 		if (_depth > maxDepth) return console.warn('runner.createRunTree: Maxdepth reached.', _depth, maxDepth);
-		if (!This.runTree[_depth]) This.runTree.addLayer(_depth);
 
-		for (let node of _outputs)
+		if (!This.runTree[_depth]) This.runTree.addLayer(_depth);
+		This.runTree[_depth].addNode(_node);
+
+		if (_node.parent.componentId == NandGateComponentId)
 		{
-			for (let line of node.fromLines)
-			{
-				This.runTree[_depth].addNode(line.to);
-				recursiveRunTreeGenerator(line.to.parent.outputs, _depth + 1);
-			}
+			for (let line of _node.parent.outputs[0].fromLines) recursiveRunTreeGenerator(line.to, _depth + 1);
+			return;
+		}
+
+		for (let line of _node.fromLines)
+		{
+			recursiveRunTreeGenerator(line.to, _depth + 1);
 		}
 	}
 
