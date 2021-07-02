@@ -183,15 +183,16 @@ html, body {
     position: relative;
     width:  100%;
     height: auto;
-    max-height: calc(100vh - 50px);
     overflow-y: auto;
     overflow-x: hidden;
-    transition: all 0.45s;
+    transition: all 0.2s;
+
+    margin-bottom: 10px;
 }
 
 #sideBar .componentHolder.hide {
     transition: all 0.3s;
-    margin
+    margin-top:  -20px;
     opacity: 0;
     max-height: 0;
     pointer-events: none;
