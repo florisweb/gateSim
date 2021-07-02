@@ -373,35 +373,48 @@ function _ComponentManager() {
 function _Runner() {
 	let This = this;
 	this.runTree = new RunTree();
-	const maxDepth = 100;
+	const batchSize = 10;
+	const maxBatchCount = 10;
 
-	this.createRunTree = function(_component) {
+	this.createRunTree = async function(_component) {
 		this.runTree = new RunTree()
+		let promises = [];
+
 		for (let input of _component.inputs) 
 		{
-			for (let line of input.fromLines) recursiveRunTreeGenerator(line.to, 0);
+			for (let line of input.fromLines) 
+			{
+				promises.push(recursiveRunTreeGenerator(line.to, 0));
+			}
 		}
 
+		await Promise.all(promises);
 		this.runTree.visualize();
 	}
 
 
-	function recursiveRunTreeGenerator(_node, _depth = 0) {
-		if (_depth > maxDepth) return console.warn('runner.createRunTree: Maxdepth reached.', _depth, maxDepth);
+	async function recursiveRunTreeGenerator(_node, _depth = 0) {
+		if (_depth > batchSize * maxBatchCount) return console.warn('runner.createRunTree: Maxdepth reached.', _depth, batchSize);
+		if (_depth % batchSize == 0 && _depth != 0) await wait(0)// Adds a little spacer as to not crash the browser
 
 		if (!This.runTree[_depth]) This.runTree.addLayer(_depth);
 		This.runTree[_depth].addNode(_node);
 
+		let promises = [];
 		if (_node.parent.componentId == NandGateComponentId)
 		{
-			for (let line of _node.parent.outputs[0].fromLines) recursiveRunTreeGenerator(line.to, _depth + 1);
-			return;
+			for (let line of _node.parent.outputs[0].fromLines) 
+			{
+				promises.push(recursiveRunTreeGenerator(line.to, _depth + 1));
+			}
+		} else {
+			for (let line of _node.fromLines)
+			{
+				promises.push(recursiveRunTreeGenerator(line.to, _depth + 1));
+			}
 		}
 
-		for (let line of _node.fromLines)
-		{
-			recursiveRunTreeGenerator(line.to, _depth + 1);
-		}
+		return await Promise.all(promises);
 	}
 
 
@@ -418,16 +431,7 @@ function _Runner() {
 			}
 
 			subArr.run = function() {
-				return new Promise(function (resolve) {
-					setTimeout(function() {
-						console.log('Run layer', _index);
-						for (let i = 0; i < subArr.length; i++)
-						{
-							subArr[i].run2();
-						}
-						resolve();
-					}, runSpeed);
-				});
+				for (let i = 0; i < subArr.length; i++) subArr[i].run2();
 			}
 
 			arr[_index] = subArr;
@@ -444,6 +448,7 @@ function _Runner() {
 		arr.run = async function() {
 			for (let i = 0; i < this.length; i++)
 			{
+				if (i % batchSize == 0 && i != 0) await wait(0);
 				await arr[i].run();
 			}
 		}
@@ -452,6 +457,9 @@ function _Runner() {
 	}
 
 
+	async function wait(_length) {
+		return new Promise(function (resolve) {setTimeout(resolve, _length)});
+	}
 }
 
 
