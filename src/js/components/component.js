@@ -1,4 +1,6 @@
 
+window.runSpeed = 0;
+window.runs = 0;
 window.debug = false;
 window.instantRun = false;
 const NandGateComponentId = -1;
@@ -14,6 +16,27 @@ function NandGateComponent({position, id}) {
 	});
 
   	this.inputs[0].run = this.inputs[1].run = function(_index, _fullRun) {
+  		window.runs++;
+  		this.turnedOn = false;
+		for (let line of this.toLines)
+		{
+			if (!line.from.turnedOn) continue;
+			this.turnedOn = true;
+			break;
+		}
+		if (window.debug) console.log(_index, 'run: ' + (this.isInput ? 'input' : 'output') + ' ' + this.index + " of " + this.parent.name);
+  		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
+	  		
+  		if (instantRun)
+  		{
+  			for (let line of this.parent.outputs[0].fromLines) line.to.run(_index + 1, _fullRun);
+  		} else {
+  			for (let line of this.parent.outputs[0].fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
+  		}
+  	};
+
+
+  	this.inputs[0].run2 = this.inputs[1].run2 = function(_index, _fullRun) {
   		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -291,7 +314,29 @@ function Node({turnedOn, name}, _parent, _id) {
 	this.parent 	= _parent;
 	this.name		= name;
 
-	this.run = function() {
+	this.run = function(_index, _fullRun = false) {
+		window.runs++;
+		let prevStatus = !!this.turnedOn;
+		this.turnedOn = false;
+		for (let line of this.toLines)
+		{
+			if (!line.from.turnedOn) continue;
+			this.turnedOn = true;
+			break;
+		}
+		if (window.debug) console.log(_index, 'run: ' + (this.isInput ? 'input' : 'output') + ' ' + this.index + " of " + this.parent.name , 'don\'t end: ', prevStatus != this.turnedOn || _fullRun);
+		if (prevStatus == this.turnedOn && !_fullRun) return;
+
+		if (instantRun)
+  		{
+			for (let line of this.fromLines) line.to.run(_index + 1, _fullRun);
+  		} else {
+			for (let line of this.fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
+  		}
+	}
+
+
+	this.run2 = function() {
 		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -382,6 +427,10 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 		this.turnedOn = _status;
 	}
 
+	this.run = function(_fullRun = false) {
+		for (let line of this.fromLines) line.to.run(1, _fullRun);
+	}
+
 	let drawNode = this.draw;
 	this.draw = function() {
 		drawNode.call(this);
@@ -409,7 +458,7 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 
 		this.onclick = function() {
 			This.setStatus(!This.turnedOn);
-			Runner.runTree.run();
+			This.run();
 		}
 		
 		this.getPosition = function() {

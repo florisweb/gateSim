@@ -14,7 +14,7 @@ cp -r database ../dist/database
 
 
 echo - Building Javascript
-cat js/lib/extraFunctions.js js/lib/optionMenu.js js/lib/vector.js js/lib/popup.js js/server.js js/hitBoxManager.js js/components/component.js js/components/componentManager.js js/sideBar.js js/inputHandler.js js/popup.js js/renderer/drawLib.js js/renderer/camera.js js/renderer/renderer.js js/builder.js js/world.js js/app.js > ../dist/main_min.js
+cat js/lib/extraFunctions.js js/lib/optionMenu.js js/lib/vector.js js/lib/popup.js js/server.js js/hitBoxManager.js js/runner.js js/components/component.js js/components/componentManager.js js/sideBar.js js/inputHandler.js js/popup.js js/renderer/drawLib.js js/renderer/camera.js js/renderer/renderer.js js/builder.js js/world.js js/app.js > ../dist/main_min.js
 
 
 echo \|-------------------\|
