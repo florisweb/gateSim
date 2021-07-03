@@ -28,6 +28,7 @@ function _Runner() {
 			}
 		}
 
+		resetNodes();
 		console.warn('Runner: Finished creating runTree');
 	}
 
@@ -39,14 +40,14 @@ function _Runner() {
 
 	async function recursiveRunTreeGenerator(_node, _depth = 0) {
 		if (_node.passed) return;
-		_node.passed = true;;
+		_node.passed = true;
 		if (curNodeCount > nodesPerBatch) 
 		{
 			curBatchIndex++;
 			curNodeCount = 0;
 			await wait(0); // Adds a little spacer as to not crash the browser
 		}
-		
+
 		if (curBatchIndex > maxBatchCount) return console.warn('max batchcount reached', curBatchIndex, maxBatchCount);
 
 		if (!This.runTree[_depth]) This.runTree.addLayer(_depth);
@@ -62,6 +63,16 @@ function _Runner() {
 			for (let line of _node.fromLines)
 			{
 				await recursiveRunTreeGenerator(line.to, _depth + 1);
+			}
+		}
+	}
+
+	function resetNodes() {
+		for (let layer of Runner.runTree)
+		{
+			for (let node of layer) 
+			{
+				delete node.passed;
 			}
 		}
 	}
