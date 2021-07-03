@@ -4,7 +4,7 @@ function _Runner() {
 	let This = this;
 	this.runTree = new RunTree();
 	this.activated = true;
-	const batchSize = 20;
+	const batchSize = 50;
 	const maxBatchCount = 1;
 
 	this.createRunTree = async function(_component) {
