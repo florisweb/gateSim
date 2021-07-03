@@ -6,7 +6,7 @@ function $() {
 let prevId = 0;
 function newId() {
   prevId++
-  return 'ID' + prevId;
+  return prevId;
 }
 
 function setTextToElement(element, text) {

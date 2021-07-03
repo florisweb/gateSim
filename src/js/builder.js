@@ -140,6 +140,7 @@ function _Builder() {
           World.curComponent.addComponent(this.curBuildLines[i]);
           Builder.curBuildLines[i].to.run(0);
         }
+        if (Runner.activated) Runner.reEvaluate();
 
         this.curBuildLines = [];
         return;

@@ -1,8 +1,9 @@
 
 window.runSpeed = 0;
-window.runs = 0;
 window.debug = false;
 window.instantRun = false;
+
+
 const NandGateComponentId = -1;
 function NandGateComponent({position, id}) {
 	let This = this;
@@ -16,7 +17,7 @@ function NandGateComponent({position, id}) {
 	});
 
   	this.inputs[0].run = this.inputs[1].run = function(_index, _fullRun) {
-  		window.runs++;
+  		if (Runner.activated) return;
   		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -315,7 +316,7 @@ function Node({turnedOn, name}, _parent, _id) {
 	this.name		= name;
 
 	this.run = function(_index, _fullRun = false) {
-		window.runs++;
+		if (Runner.activated) return;
 		let prevStatus = !!this.turnedOn;
 		this.turnedOn = false;
 		for (let line of this.toLines)
@@ -385,12 +386,12 @@ function Node({turnedOn, name}, _parent, _id) {
 			isInput: this.isInput,
 			turnedOn: this.turnedOn
 		});
-		Renderer.drawLib.drawCenteredText({
-			text: this.id.substr(4, 100),
-			position: this.getPosition(),
-			fontSize: 10,
-			color: '#0ff'
-		})
+		// Renderer.drawLib.drawCenteredText({
+		// 	text: this.id.substr(4, 100),
+		// 	position: this.getPosition(),
+		// 	fontSize: 10,
+		// 	color: '#0ff'
+		// });
 	}
 }
 
@@ -458,6 +459,8 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 
 		this.onclick = function() {
 			This.setStatus(!This.turnedOn);
+			
+			if (Runner.activated) return Runner.runTree.run();
 			This.run();
 		}
 		

@@ -3,6 +3,7 @@
 function _Runner() {
 	let This = this;
 	this.runTree = new RunTree();
+	this.activated = true;
 	const batchSize = 20;
 	const maxBatchCount = 1;
 
@@ -66,7 +67,7 @@ function _Runner() {
 			}
 
 			subArr.run = function() {
-				for (let i = 0; i < subArr.length; i++) subArr[i].run();
+				for (let i = 0; i < subArr.length; i++) subArr[i].run2();
 			}
 
 			arr[_index] = subArr;

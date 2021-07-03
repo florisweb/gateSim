@@ -165,7 +165,7 @@ function _KeyHandler() {
 				Builder.curSelectedItem.remove();
 				Builder.curSelectedItem = false;
 				Builder.cancelBuildingLine();
-				// await Runner.reEvaluate();
+				if (Runner.activated) Runner.reEvaluate();
 			},
 			ignoreIfInInputField: true
 		},
