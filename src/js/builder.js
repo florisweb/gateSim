@@ -29,6 +29,7 @@ function _Builder() {
     World.import(_component);
     curEditComponent = _component
     HTML.nameHolder.value = _component.name;
+    if (Runner.activated) Runner.reEvaluate();
   }
 
   this.newChip = function(_inputs = 2, _outputs = 1) {

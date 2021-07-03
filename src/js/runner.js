@@ -4,23 +4,31 @@ function _Runner() {
 	let This = this;
 	this.runTree = new RunTree();
 	this.activated = true;
-	const batchSize = 50;
-	const maxBatchCount = 1;
+	const nodesPerBatch = 100;
+	const maxBatchCount = 100;
+	let curNodeCount = 0;
+	let curBatchIndex = 0;
 
 	this.createRunTree = async function(_component) {
 		console.warn('Runner: Creating runtree.');
-		this.runTree = new RunTree()
-		let promises = [];
-
+		curNodeCount = 0;
+		curBatchIndex = 0;
+		this.runTree = new RunTree();
+		
+		let curIndex = 0;
+		let totalStartNodes = 0;
+		for (let input of _component.inputs) totalStartNodes += input.fromLines.length;
 		for (let input of _component.inputs) 
 		{
 			for (let line of input.fromLines) 
 			{
-				promises.push(recursiveRunTreeGenerator(line.to, 0));
+				curIndex++;
+				console.info('Progress:', curIndex / totalStartNodes * 100 + "%");
+				await recursiveRunTreeGenerator(line.to, 0);
 			}
 		}
 
-		await Promise.all(promises);
+		console.warn('Runner: Finished creating runTree');
 	}
 
 	this.reEvaluate = async function() {
@@ -30,27 +38,32 @@ function _Runner() {
 
 
 	async function recursiveRunTreeGenerator(_node, _depth = 0) {
-		if (_depth > batchSize * maxBatchCount) return console.warn('runner.createRunTree: Maxdepth reached.', _depth, batchSize);
-		if (_depth % batchSize == 0 && _depth != 0) await wait(0); // Adds a little spacer as to not crash the browser
+		if (_node.passed) return;
+		_node.passed = true;;
+		if (curNodeCount > nodesPerBatch) 
+		{
+			curBatchIndex++;
+			curNodeCount = 0;
+			await wait(0); // Adds a little spacer as to not crash the browser
+		}
+		
+		if (curBatchIndex > maxBatchCount) return console.warn('max batchcount reached', curBatchIndex, maxBatchCount);
 
 		if (!This.runTree[_depth]) This.runTree.addLayer(_depth);
 		This.runTree[_depth].addNode(_node);
 
-		let promises = [];
 		if (_node.parent.componentId == NandGateComponentId)
 		{
 			for (let line of _node.parent.outputs[0].fromLines) 
 			{
-				promises.push(recursiveRunTreeGenerator(line.to, _depth + 1));
+				await recursiveRunTreeGenerator(line.to, _depth + 1);
 			}
 		} else {
 			for (let line of _node.fromLines)
 			{
-				promises.push(recursiveRunTreeGenerator(line.to, _depth + 1));
+				await recursiveRunTreeGenerator(line.to, _depth + 1);
 			}
 		}
-
-		return await Promise.all(promises);
 	}
 
 
@@ -63,6 +76,7 @@ function _Runner() {
 				{
 					if (_node.id == this[i].id) return;
 				}
+				curNodeCount++;
 				this.push(_node);
 			}
 
@@ -84,7 +98,6 @@ function _Runner() {
 		arr.run = async function() {
 			for (let i = 0; i < this.length; i++)
 			{
-				if (i % batchSize == 0 && i != 0) await wait(0);
 				await arr[i].run();
 			}
 		}
