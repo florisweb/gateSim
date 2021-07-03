@@ -392,6 +392,11 @@ function _Runner() {
 		this.runTree.visualize();
 	}
 
+	this.reEvaluate = async function() {
+		await this.createRunTree(World.curComponent);
+		await this.runTree.run();
+	}
+
 
 	async function recursiveRunTreeGenerator(_node, _depth = 0) {
 		if (_depth > batchSize * maxBatchCount) return console.warn('runner.createRunTree: Maxdepth reached.', _depth, batchSize);
@@ -431,7 +436,7 @@ function _Runner() {
 			}
 
 			subArr.run = function() {
-				for (let i = 0; i < subArr.length; i++) subArr[i].run2();
+				for (let i = 0; i < subArr.length; i++) subArr[i].run();
 			}
 
 			arr[_index] = subArr;

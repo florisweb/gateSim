@@ -160,11 +160,12 @@ function _KeyHandler() {
 		},
 		{
 			keys: ["Backspace"], 
-			event: function () {
+			event: async function () {
 				if (!Builder.curSelectedItem) return;
 				Builder.curSelectedItem.remove();
 				Builder.curSelectedItem = false;
 				Builder.cancelBuildingLine();
+				await Runner.reEvaluate();
 			},
 			ignoreIfInInputField: true
 		},
