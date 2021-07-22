@@ -37,7 +37,7 @@ function NandGateComponent({position, id}) {
   	};
 
 
-  	this.inputs[0].run2 = this.inputs[1].run2 = function(_index, _fullRun) {
+  	this.inputs[0].run2 = this.inputs[1].run2 = function(_index) {
   		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -386,12 +386,12 @@ function Node({turnedOn, name}, _parent, _id) {
 			isInput: this.isInput,
 			turnedOn: this.turnedOn
 		});
-		// Renderer.drawLib.drawCenteredText({
-		// 	text: this.id.substr(4, 100),
-		// 	position: this.getPosition(),
-		// 	fontSize: 10,
-		// 	color: '#0ff'
-		// });
+		Renderer.drawLib.drawCenteredText({
+			text: this.id.substr(4, 100),
+			position: this.getPosition(),
+			fontSize: 10,
+			color: '#0ff'
+		});
 	}
 }
 

@@ -4,32 +4,26 @@ function _Runner() {
 	let This = this;
 	this.runTree = new RunTree();
 	this.activated = true;
-	const nodesPerBatch = 100;
-	const maxBatchCount = 100;
-	let curNodeCount = 0;
-	let curBatchIndex = 0;
+
+	const maxLayerCount = 300;
+	const maxNodeUpdates = 10;
+
 
 	this.createRunTree = async function(_component) {
 		console.warn('Runner: Creating runtree.');
-		curNodeCount = 0;
-		curBatchIndex = 0;
 		this.runTree = new RunTree();
 		
-		let curIndex = 0;
-		let totalStartNodes = 0;
-		for (let input of _component.inputs) totalStartNodes += input.fromLines.length;
-		for (let input of _component.inputs) 
+		createRunTreeLayer(_component.inputs, 0);
+		for (let i = 1; i < maxLayerCount; i++)
 		{
-			for (let line of input.fromLines) 
-			{
-				curIndex++;
-				console.info('Progress:', curIndex / totalStartNodes * 100 + "%");
-				await recursiveRunTreeGenerator(line.to, 0);
-			}
+			let curLayer = this.runTree[i - 1]
+			if (!curLayer.length) break;
+			createRunTreeLayer(curLayer, i);
+			await wait(0); // Wait after every layer to give the CPU some breathing time
 		}
 
 		resetNodes();
-		console.warn('Runner: Finished creating runTree');
+		console.warn('Runner: Finished creating runTree (' + this.runTree.length + ' layers)');
 	}
 
 	this.reEvaluate = async function() {
@@ -38,31 +32,19 @@ function _Runner() {
 	}
 
 
-	async function recursiveRunTreeGenerator(_node, _depth = 0) {
-		if (_node.passed) return;
-		_node.passed = true;
-		if (curNodeCount > nodesPerBatch) 
-		{
-			curBatchIndex++;
-			curNodeCount = 0;
-			await wait(0); // Adds a little spacer as to not crash the browser
-		}
-
-		if (curBatchIndex > maxBatchCount) return console.warn('max batchcount reached', curBatchIndex, maxBatchCount);
-
+	async function createRunTreeLayer(_prevLayerNodes, _depth = 0) {
 		if (!This.runTree[_depth]) This.runTree.addLayer(_depth);
-		This.runTree[_depth].addNode(_node);
+		for (let node of _prevLayerNodes)
+		{			
+			let outputNode = node;
+			if (node.parent.componentId == NandGateComponentId) outputNode = node.parent.outputs[0]
 
-		if (_node.parent.componentId == NandGateComponentId)
-		{
-			for (let line of _node.parent.outputs[0].fromLines) 
+			for (let line of outputNode.fromLines) 
 			{
-				await recursiveRunTreeGenerator(line.to, _depth + 1);
-			}
-		} else {
-			for (let line of _node.fromLines)
-			{
-				await recursiveRunTreeGenerator(line.to, _depth + 1);
+				if (line.to.updateCount == undefined) line.to.updateCount = 0;
+				line.to.updateCount++;
+				if (line.to.updateCount > maxNodeUpdates) continue;
+				This.runTree[_depth].addNode(line.to);
 			}
 		}
 	}
@@ -72,7 +54,7 @@ function _Runner() {
 		{
 			for (let node of layer) 
 			{
-				delete node.passed;
+				delete node.updateCount;
 			}
 		}
 	}
@@ -87,7 +69,6 @@ function _Runner() {
 				{
 					if (_node.id == this[i].id) return;
 				}
-				curNodeCount++;
 				this.push(_node);
 			}
 
@@ -105,13 +86,19 @@ function _Runner() {
 				console.info("[" + i + "]: ", this[i].map(r => r.id));
 			}
 		}
+		arr.createNodeList = function() {
+			let curArr = [];
+			for (let layer of this) curArr = curArr.concat(layer.map(r => r.id));
+			return curArr;
+		}
 
 		arr.run = async function() {
-			for (let i = 0; i < this.length; i++)
-			{
-				await arr[i].run();
+			for (let r = 0; r < 5; r++) // TODO: Figure out why the system requires multiple runs: has something to do with the nand-gate not communicating it's value correctly
+			{	
+				for (let i = 0; i < this.length; i++) arr[i].run();
 			}
 		}
+		
 
 		return arr;
 	}
