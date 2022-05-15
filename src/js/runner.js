@@ -106,7 +106,6 @@ function _Runner() {
 			if (out) out += " || ";
 			if (parent.componentId == NandGateComponentId)
 			{
-				// out += "!((" + this.createFormulaForOutput(parent.inputs[0], _uniqueId) + ") && (" + this.createFormulaForOutput(parent.inputs[1], _uniqueId) + "))";
 				out += "nand(" + this.createFormulaForOutput(parent.inputs[0], _uniqueId) + ", " + this.createFormulaForOutput(parent.inputs[1], _uniqueId) + ")";
 				continue;
 			}
@@ -132,6 +131,8 @@ function _Runner() {
 		let formulas = this.createFormulas(_component);
 		let outputs = [];
 		let unknownVariables = [];
+		let trulyUnknownVariables = [];
+
 		for (let formula of formulas)
 		{
 			let curFormula = formula;
@@ -154,7 +155,7 @@ function _Runner() {
 				let variable = exists
 				if (!exists) 
 				{
-					variable = new Variable({nodeName: varName}, unknownVariables.length);
+					variable = new Variable({nodeName: varName, component: _component}, unknownVariables.length);
 					unknownVariables.push(variable);
 				}
 
@@ -165,22 +166,34 @@ function _Runner() {
 			outputs.push(eval(newFormula));
 		}
 
+		console.log('quantum state', trulyUnknownVariables);
 		return outputs;
+
 		function nand(a, b) {
+			if (typeof a != 'boolean') 
+			{
+				trulyUnknownVariables.push(unknownVariables[a]);
+				a = unknownVariables[a].getNode().turnedOn;
+			}
+			if (typeof b != 'boolean') 
+			{
+				trulyUnknownVariables.push(unknownVariables[b]);
+				b = unknownVariables[b].getNode().turnedOn;
+			}
+
 			if (typeof a == 'boolean' && typeof b == 'boolean') return !(a && b);
-			if (a == b) return false; // If the same quantum number
-			console.log('quantum nand', a, b);
-			if (typeof a != 'boolean') console.log('a', unknownVariables[a]);
-			if (typeof b != 'boolean') console.log('b', unknownVariables[b]);
-			return true;
+			console.log('came here somehow')
+			return false;
 		};
 	}
 
 
-	function Variable({nodeName}, _index) {
+	function Variable({nodeName, component}, _index) {
 		this.nodeName = nodeName;
 		this.name = _index;
-
+		this.getNode = function() {
+			return component.getNodeById(this.nodeName)
+		}
 	}
 }
 

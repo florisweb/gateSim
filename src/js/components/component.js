@@ -16,7 +16,7 @@ function NandGateComponent({position, id}) {
 	
   	this.inputs[0].run = this.inputs[1].run = async function(_index, _curRunID, _fullRun) {
   		if (Runner.activated) return;
-  		let prevState = this.turnedOn;
+  		this.prevState = this.turnedOn;
   		if (this.lastRunId == _curRunID) return Runner.addLoopedNode(this);
 		this.lastRunId = _curRunID;
 
@@ -28,7 +28,7 @@ function NandGateComponent({position, id}) {
 			this.turnedOn = true;
 			break;
 		}
-		if (prevState == this.turnedOn && !_fullRun) return;
+		if (this.prevState == this.turnedOn && !_fullRun) return;
   		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);  		
   		// await Runner.awaitNextStep();
   		for (let line of this.parent.outputs[0].fromLines) line.to.run(_index + 1, _curRunID, _fullRun);
@@ -178,6 +178,27 @@ function Component({position, name, id, componentId, inputs, outputs, content}) 
 		return false;
 	}
 
+	this.getNodeById = function(_id) {
+		for (let input of this.inputs)
+		{
+			if (input.id == _id) return input;
+		}
+		for (let output of this.outputs)
+		{
+			if (output.id == _id) return output;
+		}
+
+		for (let component of this.content)
+		{
+			if (component.type == 'line') continue;
+			let node = component.getNodeById(_id);
+			if (!node) continue;
+			return node;
+		}
+		return false;
+
+	}
+
 	this.remove = function(_removeDepth = 0) {
 		for (let i = this.content.length - 1; i >= 0; i--) this.content[i].remove(_removeDepth + 1);
 		HitBoxManager.unregister(this.hitBoxId);
@@ -301,12 +322,13 @@ function Node({turnedOn, name}, _parent, _id) {
 	this.parent 	= _parent;
 	this.name		= name;
 
+	this.prevState  = false;
 	this.run = async function(_index, _curRunID, _fullRun = false) {
 		if (Runner.activated) return;
 		// if (this.lastRunId == _curRunID) return Runner.addLoopedNode(this);
 		this.lastRunId = _curRunID;
 
-		let prevStatus = this.turnedOn;
+		this.prevState = this.turnedOn;
 		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -315,7 +337,7 @@ function Node({turnedOn, name}, _parent, _id) {
 			break;
 		}
 		// console.log('run node', this.id, _index, 'update: ', !(prevStatus == this.turnedOn && !_fullRun));
-		if (prevStatus == this.turnedOn && !_fullRun) return;
+		if (this.prevState == this.turnedOn && !_fullRun) return;
 
 		// await Runner.awaitNextStep();
 		for (let line of this.fromLines) line.to.run(_index + 1, _curRunID, _fullRun);
