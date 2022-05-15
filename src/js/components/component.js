@@ -1,7 +1,5 @@
 
-window.runSpeed = 0;
 window.debug = false;
-window.instantRun = false;
 
 
 const NandGateComponentId = -1;
@@ -15,9 +13,14 @@ function NandGateComponent({position, id}) {
 		inputs: [{name: ''}, {name: ''}],
 		outputs: [{name: '', turnedOn: true}],
 	});
-
-  	this.inputs[0].run = this.inputs[1].run = function(_index, _fullRun) {
+	
+  	this.inputs[0].run = this.inputs[1].run = async function(_index, _curRunID, _fullRun) {
   		if (Runner.activated) return;
+  		let prevState = this.turnedOn;
+  		if (this.lastRunId == _curRunID) return Runner.addLoopedNode(this);
+		this.lastRunId = _curRunID;
+
+
   		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -25,28 +28,11 @@ function NandGateComponent({position, id}) {
 			this.turnedOn = true;
 			break;
 		}
-		if (window.debug) console.log(_index, 'run: ' + (this.isInput ? 'input' : 'output') + ' ' + this.index + " of " + this.parent.name);
-  		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
-	  		
-  		if (instantRun)
-  		{
-  			for (let line of this.parent.outputs[0].fromLines) line.to.run(_index + 1, _fullRun);
-  		} else {
-  			for (let line of this.parent.outputs[0].fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
-  		}
+		if (prevState == this.turnedOn && !_fullRun) return;
+  		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);  		
+  		// await Runner.awaitNextStep();
+  		for (let line of this.parent.outputs[0].fromLines) line.to.run(_index + 1, _curRunID, _fullRun);
   	};
-
-
-  	this.inputs[0].run2 = this.inputs[1].run2 = function(_index) {
-  		this.turnedOn = false;
-		for (let line of this.toLines)
-		{
-			if (!line.from.turnedOn) continue;
-			this.turnedOn = true;
-			break;
-		}
-  		this.parent.outputs[0].turnedOn = !(this.parent.inputs[0].turnedOn && this.parent.inputs[1].turnedOn);
-  	}
 }
 
 
@@ -315,9 +301,12 @@ function Node({turnedOn, name}, _parent, _id) {
 	this.parent 	= _parent;
 	this.name		= name;
 
-	this.run = function(_index, _fullRun = false) {
+	this.run = async function(_index, _curRunID, _fullRun = false) {
 		if (Runner.activated) return;
-		let prevStatus = !!this.turnedOn;
+		// if (this.lastRunId == _curRunID) return Runner.addLoopedNode(this);
+		this.lastRunId = _curRunID;
+
+		let prevStatus = this.turnedOn;
 		this.turnedOn = false;
 		for (let line of this.toLines)
 		{
@@ -325,28 +314,12 @@ function Node({turnedOn, name}, _parent, _id) {
 			this.turnedOn = true;
 			break;
 		}
-		if (window.debug) console.log(_index, 'run: ' + (this.isInput ? 'input' : 'output') + ' ' + this.index + " of " + this.parent.name , 'don\'t end: ', prevStatus != this.turnedOn || _fullRun);
+		// console.log('run node', this.id, _index, 'update: ', !(prevStatus == this.turnedOn && !_fullRun));
 		if (prevStatus == this.turnedOn && !_fullRun) return;
 
-		if (instantRun)
-  		{
-			for (let line of this.fromLines) line.to.run(_index + 1, _fullRun);
-  		} else {
-			for (let line of this.fromLines) setTimeout(function () {line.to.run(_index + 1, _fullRun);}, window.runSpeed);
-  		}
+		// await Runner.awaitNextStep();
+		for (let line of this.fromLines) line.to.run(_index + 1, _curRunID, _fullRun);
 	}
-
-
-	this.run2 = function() {
-		this.turnedOn = false;
-		for (let line of this.toLines)
-		{
-			if (!line.from.turnedOn) continue;
-			this.turnedOn = true;
-			break;
-		}
-	}
-
 
 
 	this.remove = function(_removeDepth = 0) {
@@ -381,10 +354,8 @@ function Node({turnedOn, name}, _parent, _id) {
 	this.draw = function() {
 		if (this.getDepth() > Renderer.maxRenderDepth) return;
 		Renderer.drawInOutPut({
+			...this,
 			position: this.getPosition(),
-			name: this.name,
-			isInput: this.isInput,
-			turnedOn: this.turnedOn
 		});
 		Renderer.drawLib.drawCenteredText({
 			text: this.id.substr(4, 100),
@@ -428,8 +399,8 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 		this.turnedOn = _status;
 	}
 
-	this.run = function(_fullRun = false) {
-		for (let line of this.fromLines) line.to.run(1, _fullRun);
+	this.run = function(_curRunID, _fullRun = false) {
+		for (let line of this.fromLines) line.to.run(1, _curRunID, _fullRun);
 	}
 
 	let drawNode = this.draw;
@@ -460,8 +431,9 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 		this.onclick = function() {
 			This.setStatus(!This.turnedOn);
 			
-			if (Runner.activated) return Runner.runTree.run();
-			This.run();
+			// if (Runner.activated) return Runner.runTree.run();
+			// This.run();
+			Runner.run();
 		}
 		
 		this.getPosition = function() {

@@ -30,23 +30,24 @@ function _Renderer() {
 
 
 
-	this.drawInOutPut = function({position, name, turnedOn = false, isInput = true}) {
+	this.drawInOutPut = function({position, name, turnedOn = false, isInput = true, lastRunId}) {
 		let fillColor = turnedOn ? "#f00" : "#888";
 		this.drawLib.drawText({
-			text: name,
+			text: name + '/' + lastRunId,
 			fontSize: 7,
 			position: position.copy().add(new Vector((nodeRadius + 2) * (-1 + 2 * isInput), 0)),
 			color: '#888',
 			alignRight: !isInput
 		});
 
+		let strokeColor = lastRunId == Runner.curRunId ? '#00f' : '#666';
 
 		this.drawLib.ctx.lineWidth = 3;
 		this.drawLib.drawCircle({
 			position: position,
 			radius: nodeRadius,
 			fillColor: fillColor,
-			strokeColor: '#666'
+			strokeColor: strokeColor
 		});
 		this.drawLib.ctx.lineWidth = 1;
 	}

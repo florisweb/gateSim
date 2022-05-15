@@ -43,15 +43,7 @@ function _World() {
   }
 
 
-  this.run = function(_fullRun = false) {
-    for (let input of this.curComponent.inputs)
-    {
-      input.run(_fullRun);
-    }
-  }
-
   this.update = function() {
-    // this.run();
     Builder.update();
 
     setTimeout(function () {
