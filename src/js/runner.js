@@ -78,16 +78,25 @@ function _Runner() {
 		let out = [];
 		for (let output of _component.outputs)
 		{
-			out.push(this.createFormulaForOutput(output));
+			let uniqueId = newId();
+			out.push(this.createFormulaForOutput(output, uniqueId));
 		}
 		return out;
 	}
 
-	this.createFormulaForOutput = function(_output) {
+	this.createFormulaForOutput = function(_output, _uniqueId) {
 		let out = "";
 		for (let lineTo of _output.toLines)
 		{
 			let parent = lineTo.from.parent;
+			if (lineTo.from.formulaId == _uniqueId && nodeDependantOn(lineTo.from, _output))
+			{
+				console.log(lineTo.from.id + " is dependant on " + _output.id);
+				out = "LOOP(" + lineTo.from.id + ") || ";
+				continue;
+			}
+
+			lineTo.from.formulaId = _uniqueId;
 			if (parent.isWorldComponent) 
 			{
 				out += "IN" + lineTo.from.index + " || ";	
@@ -97,19 +106,32 @@ function _Runner() {
 			if (out) out += " || ";
 			if (parent.componentId == NandGateComponentId)
 			{
-				out += "nand(" + this.createFormulaForOutput(parent.inputs[0]) + ", " + this.createFormulaForOutput(parent.inputs[1]) + ")";
+				// out += "!((" + this.createFormulaForOutput(parent.inputs[0], _uniqueId) + ") && (" + this.createFormulaForOutput(parent.inputs[1], _uniqueId) + "))";
+				out += "nand(" + this.createFormulaForOutput(parent.inputs[0], _uniqueId) + ", " + this.createFormulaForOutput(parent.inputs[1], _uniqueId) + ")";
 				continue;
 			}
 
-			out += this.createFormulaForOutput(lineTo.from);
+			out += this.createFormulaForOutput(lineTo.from, _uniqueId);
 		}
 		return out.split(" || ").filter((a) => a).join(" || ");
 	}
 
 
-	this.calcComponentOutput = function(_component, _inputs) {
+	function nodeDependantOn(_node, _dependantOnNode, _depth = 0) {
+		if (_node.parent.isWorldComponent) return false;
+		if (_depth > 5) return true;
+		for (let line of _node.toLines)
+		{
+			if (line.from.id == _dependantOnNode.id) return true;
+			if (nodeDependantOn(line.from, _dependantOnNode, _depth + 1)) return true;
+		}
+		return false;
+	}
+
+	this.calcComponentOutput = function(_component = World.curComponent, _inputs) {
 		let formulas = this.createFormulas(_component);
-		let outputs = []
+		let outputs = [];
+		let unknownVariables = [];
 		for (let formula of formulas)
 		{
 			let curFormula = formula;
@@ -118,14 +140,48 @@ function _Runner() {
 				curFormula = curFormula.split("IN" + i).join(_inputs[i]);
 			}
 
-			outputs.push(eval(curFormula));
+			let variableParts = curFormula.split("LOOP(");
+			console.log(variableParts, curFormula);
+			let newFormula = variableParts[0];
+			for (let p = 1; p < variableParts.length; p++)
+			{
+				let endIndex = variableParts[p].split("").findIndex((a) => a == ")");
+
+				let varName = variableParts[p].substr(0, endIndex);
+				let suffix = variableParts[p].substr(endIndex + 1, variableParts[p].length);
+
+				let exists = unknownVariables.find((v) => v.nodeName == varName);
+				let variable = exists
+				if (!exists) 
+				{
+					variable = new Variable({nodeName: varName}, unknownVariables.length);
+					unknownVariables.push(variable);
+				}
+
+				newFormula += "" + variable.name + "" + suffix;
+			}
+			console.log("execute formula", newFormula);
+				
+			outputs.push(eval(newFormula));
 		}
 
 		return outputs;
-
-		function nand(a, b) {return !(a && b)};
+		function nand(a, b) {
+			if (typeof a == 'boolean' && typeof b == 'boolean') return !(a && b);
+			if (a == b) return false; // If the same quantum number
+			console.log('quantum nand', a, b);
+			if (typeof a != 'boolean') console.log('a', unknownVariables[a]);
+			if (typeof b != 'boolean') console.log('b', unknownVariables[b]);
+			return true;
+		};
 	}
 
+
+	function Variable({nodeName}, _index) {
+		this.nodeName = nodeName;
+		this.name = _index;
+
+	}
 }
 
 
