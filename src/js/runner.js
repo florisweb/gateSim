@@ -74,6 +74,50 @@ function _Runner() {
 
 
 
+
+
+	let formulas = [];
+	let internalVariables = [];
+	this.prepareRun = function() {
+		let formulaSet = this.createOptimizedFormulas(World.curComponent);
+		formulas = formulaSet.formulas;
+		internalVariables = formulaSet.variables;
+		for (let variable of internalVariables) variable.state = false;
+	}
+	this.getInfo = () => [formulas, internalVariables];
+
+	let nand = (a, b) => !(a && b);
+	this.evaluateModel = function() {
+		// TODO: Evaluate the internal Variables
+		let outputs = [];
+
+		for (let formula of formulas)
+		{
+			let curFormula = formula;
+			for (let i = 0; i < World.curComponent.inputs.length; i++)
+			{
+				curFormula = curFormula.split("IN" + i).join(World.curComponent.inputs[i].turnedOn ? 1 : 0);
+			}
+
+
+			for (let variable of internalVariables)
+			{
+				curFormula = curFormula.split("LOOP(" + variable.nodeName + ")").join(variable.state ? 1 : 0);
+			}
+
+			console.log("execute formula", curFormula);
+				
+			outputs.push(eval(curFormula));
+		}
+
+
+		return outputs;
+	} 
+
+
+
+
+
 	this.createFormulas = function(_component = World.curComponent) {
 		let out = [];
 		let variables = [];
@@ -135,7 +179,7 @@ function _Runner() {
 		for (let lineTo of _output.toLines)
 		{
 			let parent = lineTo.from.parent;
-			if (lineTo.from.formulaId == _uniqueId && nodeDependantOn(lineTo.from, _output) && lineTo.from.id != _originalOutput.id)
+			if (lineTo.from.formulaId == _uniqueId && nodeDependantOn(lineTo.from, _output) && lineTo.from.id != _originalOutput.id) // a node can't be dependant on itself
 			{
 				out = "LOOP(" + lineTo.from.id + ") || ";
 
@@ -262,8 +306,9 @@ function _Runner() {
 
 
 	function Variable({nodeName, component}, _index) {
-		this.nodeName = nodeName;
-		this.name = _index;
+		this.nodeName 	= nodeName;
+		this.name 		= _index;
+		this.state 		= false;
 
 		this.getNode = function() {
 			return component.getNodeById(this.nodeName)
