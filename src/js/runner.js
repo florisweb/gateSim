@@ -76,27 +76,76 @@ function _Runner() {
 
 	this.createFormulas = function(_component = World.curComponent) {
 		let out = [];
+		let variables = [];
 		for (let output of _component.outputs)
 		{
 			let uniqueId = newId();
-			out.push(this.createFormulaForOutput(output, uniqueId));
+			let result = this.createFormulaForOutput(output, uniqueId);
+			variables = variables.concat(result.variables);
+			out.push(result.formula);
 		}
-		return out;
+		return {
+			formulas: out,
+			variables: variables
+		}
+	}
+	this.createOptimizedFormulas = function(_component = World.curComponent) {
+		let result = this.createFormulas(...arguments);
+		let optimizedVariables = [];
+		for (let variable of result.variables)
+		{
+			let formulaSet = variable.getFormulaSet(_component); 
+
+			let isSubstitutable = true;
+			for (let subVar of formulaSet.variables)
+			{
+				if (!optimizedVariables.find((_var) => _var.nodeName == subVar.nodeName)) continue;
+				isSubstitutable = false;
+				break;
+			}
+
+			optimizedVariables.push(variable);
+			if (!isSubstitutable) continue;
+			variable.formula = formulaSet.formula;
+		}
+		result.variables = optimizedVariables;
+		let baseVariables = [];
+
+		for (let i = 0; i < result.formulas.length; i++)
+		{
+			for (let variable of optimizedVariables)
+			{
+				if (!variable.formula) 
+				{
+					baseVariables.push(variable);
+					continue;
+				};
+				let parts = result.formulas[i].split("LOOP(" + variable.nodeName + ")");
+				result.formulas[i] = parts.join("(" + variable.formula + ")")
+			}
+		}
+		result.variables = baseVariables;
+		return result;
 	}
 
-	this.createFormulaForOutput = function(_output, _uniqueId) {
+	this.createFormulaForOutput = function(_output, _uniqueId, _originalOutput) {
+		if (!_originalOutput) _originalOutput = _output;
+		let variables = [];
 		let out = "";
 		for (let lineTo of _output.toLines)
 		{
 			let parent = lineTo.from.parent;
-			if (lineTo.from.formulaId == _uniqueId && nodeDependantOn(lineTo.from, _output))
+			if (lineTo.from.formulaId == _uniqueId && nodeDependantOn(lineTo.from, _output) && lineTo.from.id != _originalOutput.id)
 			{
-				console.log(lineTo.from.id + " is dependant on " + _output.id);
 				out = "LOOP(" + lineTo.from.id + ") || ";
+
+				let variable = new Variable({nodeName: lineTo.from.id}, variables.length);
+				variables.push(variable);
 				continue;
 			}
 
 			lineTo.from.formulaId = _uniqueId;
+
 			if (parent.isWorldComponent) 
 			{
 				out += "IN" + lineTo.from.index + " || ";	
@@ -106,13 +155,37 @@ function _Runner() {
 			if (out) out += " || ";
 			if (parent.componentId == NandGateComponentId)
 			{
-				out += "nand(" + this.createFormulaForOutput(parent.inputs[0], _uniqueId) + ", " + this.createFormulaForOutput(parent.inputs[1], _uniqueId) + ")";
+				let resultA = this.createFormulaForOutput(parent.inputs[0], _uniqueId, _originalOutput);
+				let resultB = this.createFormulaForOutput(parent.inputs[1], _uniqueId, _originalOutput);
+				variables = variables.concat(resultA.variables).concat(resultB.variables);
+				out += "nand(" + resultA.formula + ", " + resultB.formula + ")";
 				continue;
 			}
 
-			out += this.createFormulaForOutput(lineTo.from, _uniqueId);
+			
+			let result = this.createFormulaForOutput(lineTo.from, _uniqueId, _originalOutput);
+			variables = variables.concat(result.variables);
+			out += result.formula;
 		}
-		return out.split(" || ").filter((a) => a).join(" || ");
+
+
+		let actualVariables = [];
+		for (let variable of variables)
+		{
+			let exists = actualVariables.find((_var) => _var.nodeName == variable.nodeName);
+			if (exists)
+			{
+				exists.merge(variable);
+				continue;
+			}
+			actualVariables.push(variable);
+		}
+
+
+		return {
+			formula: out.split(" || ").filter((a) => a).join(" || "),
+			variables: actualVariables,
+		}
 	}
 
 
@@ -191,8 +264,16 @@ function _Runner() {
 	function Variable({nodeName, component}, _index) {
 		this.nodeName = nodeName;
 		this.name = _index;
+
 		this.getNode = function() {
 			return component.getNodeById(this.nodeName)
+		}
+
+		this.merge = function(_var) {}
+
+		this.getFormulaSet = function(_component) {
+			let node = _component.getNodeById(this.nodeName);
+			return Runner.createFormulaForOutput(node, newId());
 		}
 	}
 }
