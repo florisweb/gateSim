@@ -72,6 +72,19 @@ function _Runner() {
 		return new Promise(function (resolve) {setTimeout(resolve, _length)});
 	}
 
+	this.calcTruthTable = function() {
+		if (internalVariables.length) return console.warn("A system with internal variable doesn't have a constant truth table.");
+		let outputs = [];
+
+		let maxOptions = Math.pow(2, World.curComponent.inputs.length);
+		for (let i = 0; i < maxOptions; i++)
+		{
+			let curInput = createBinaryString(i).split("").reverse().map((a) => a == "1").splice(0, World.curComponent.inputs.length);
+			outputs[i] = {input: curInput, output: this.evaluateModel(curInput)}
+			console.log(i, ": " + curInput.join(" "), outputs[i].output);
+		}
+		return outputs;
+	}
 
 
 
@@ -115,16 +128,13 @@ function _Runner() {
 				if (pseudoVars.find((_var) => _var.nodeName == varName)) continue;
 				pseudoVars.push(new Variable({nodeName: varName, component: World.curComponent}));
 			}
-
 			
 			variable.getNode().turnedOn = eval(newFormula);
-			console.log("var: execute formula", newFormula, variable, "value:", variable.getNode().turnedOn);
 		}
 
 		for (let pseudo of pseudoVars)
 		{
 			pseudo.getNode().turnedOn = evaluateFormula(pseudo.getFormulaSet(World.curComponent).formula, _inputs);
-			console.log('pseudo', pseudo, pseudo.getNode().turnedOn);
 		}
 
 
@@ -144,8 +154,6 @@ function _Runner() {
 			let state = variable.getNodeState();
 			curFormula = curFormula.split("LOOP(" + variable.nodeName + ")").join(state ? 1 : 0);
 		}
-
-		console.log("execute formula", curFormula);
 			
 		return eval(curFormula);
 	}
@@ -271,7 +279,7 @@ function _Runner() {
 
 	function nodeDependantOn(_node, _dependantOnNode, _depth = 0) {
 		if (_node.parent.isWorldComponent) return false;
-		if (_depth > 5) return true;
+		if (_depth > 10) return true;
 		for (let line of _node.toLines)
 		{
 			if (line.from.id == _dependantOnNode.id) return true;
@@ -476,3 +484,14 @@ function _Runner() {
 
 
 
+function createBinaryString(nMask) {
+  // nMask must be between -2147483648 and 2147483647
+  if (nMask > 2**31-1) 
+     throw "number too large. number shouldn't be > 2**31-1"; //added
+  if (nMask < -1*(2**31))
+     throw "number too far negative, number shouldn't be < 2**31" //added
+  for (var nFlag = 0, nShifted = nMask, sMask = ''; nFlag < 32;
+       nFlag++, sMask += String(nShifted >>> 31), nShifted <<= 1);
+  sMask=sMask.replace(/\B(?=(.{8})+(?!.))/g, " ") // added
+  return sMask;
+}
