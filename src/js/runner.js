@@ -87,32 +87,68 @@ function _Runner() {
 	this.getInfo = () => [formulas, internalVariables];
 
 	let nand = (a, b) => !(a && b);
-	this.evaluateModel = function() {
-		// TODO: Evaluate the internal Variables
-		let outputs = [];
-
-		for (let formula of formulas)
+	this.evaluateModel = function(_inputs) {
+		// Evaluate the internal variables
+		let pseudoVars = [];
+		for (let variable of internalVariables)
 		{
-			let curFormula = formula;
-			for (let i = 0; i < World.curComponent.inputs.length; i++)
+			let curFormula = variable.getFormulaSet(World.curComponent).formula;
+			for (let i = 0; i < _inputs.length; i++)
 			{
-				curFormula = curFormula.split("IN" + i).join(World.curComponent.inputs[i].turnedOn ? 1 : 0);
+				curFormula = curFormula.split("IN" + i).join(_inputs[i] ? 1 : 0);
 			}
 
+			let parts = curFormula.split("LOOP(");
 
-			for (let variable of internalVariables)
+			let newFormula = parts[0];
+			for (let p = 1; p < parts.length; p++)
 			{
-				curFormula = curFormula.split("LOOP(" + variable.nodeName + ")").join(variable.state ? 1 : 0);
-			}
+				let endIndex = parts[p].split("").findIndex((a) => a == ")");
 
-			console.log("execute formula", curFormula);
+				let varName = parts[p].substr(0, endIndex);
+				let suffix = parts[p].substr(endIndex + 1, parts[p].length);
 				
-			outputs.push(eval(curFormula));
+				let node = World.curComponent.getNodeById(varName);
+				newFormula += node.turnedOn + suffix;
+
+
+				if (pseudoVars.find((_var) => _var.nodeName == varName)) continue;
+				pseudoVars.push(new Variable({nodeName: varName, component: World.curComponent}));
+			}
+
+			
+			variable.getNode().turnedOn = eval(newFormula);
+			console.log("var: execute formula", newFormula, variable, "value:", variable.getNode().turnedOn);
+		}
+
+		for (let pseudo of pseudoVars)
+		{
+			pseudo.getNode().turnedOn = evaluateFormula(pseudo.getFormulaSet(World.curComponent).formula, _inputs);
+			console.log('pseudo', pseudo, pseudo.getNode().turnedOn);
 		}
 
 
-		return outputs;
-	} 
+		// Evalute the actual system
+		return formulas.map((_formula) => evaluateFormula(_formula, _inputs));
+	}
+
+	function evaluateFormula(_formula, _inputs) {
+		let curFormula = _formula;
+		for (let i = 0; i < _inputs.length; i++)
+		{
+			curFormula = curFormula.split("IN" + i).join(_inputs[i] ? 1 : 0);
+		}
+
+		for (let variable of internalVariables)
+		{
+			let state = variable.getNodeState();
+			curFormula = curFormula.split("LOOP(" + variable.nodeName + ")").join(state ? 1 : 0);
+		}
+
+		console.log("execute formula", curFormula);
+			
+		return eval(curFormula);
+	}
 
 
 
@@ -183,7 +219,7 @@ function _Runner() {
 			{
 				out = "LOOP(" + lineTo.from.id + ") || ";
 
-				let variable = new Variable({nodeName: lineTo.from.id}, variables.length);
+				let variable = new Variable({nodeName: lineTo.from.id, component: lineTo.parent}, variables.length);
 				variables.push(variable);
 				continue;
 			}
@@ -308,8 +344,10 @@ function _Runner() {
 	function Variable({nodeName, component}, _index) {
 		this.nodeName 	= nodeName;
 		this.name 		= _index;
-		this.state 		= false;
 
+		this.getNodeState = function() {
+			return this.getNode().turnedOn;
+		}
 		this.getNode = function() {
 			return component.getNodeById(this.nodeName)
 		}
