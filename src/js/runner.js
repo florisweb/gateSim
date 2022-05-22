@@ -95,7 +95,7 @@ function _Runner() {
 		let formulaSet = this.createOptimizedFormulas(World.curComponent);
 		formulas = formulaSet.formulas;
 		internalVariables = formulaSet.variables;
-		for (let variable of internalVariables) variable.state = false;
+		for (let variable of internalVariables) variable.getNode().turnedOn = false;
 	}
 	this.getInfo = () => [formulas, internalVariables];
 
@@ -169,7 +169,7 @@ function _Runner() {
 		{
 			let uniqueId = newId();
 			let result = this.createFormulaForOutput(output, uniqueId);
-			variables = variables.concat(result.variables);
+			variables = mergeArrays(variables, result.variables, (a, b) => a.nodeName == b.nodeName);
 			out.push(result.formula);
 		}
 		return {
@@ -177,10 +177,16 @@ function _Runner() {
 			variables: variables
 		}
 	}
+
 	this.createOptimizedFormulas = function(_component = World.curComponent) {
 		let result = this.createFormulas(...arguments);
+		return optimizeVariables(result, _component);
+	}
+
+	function optimizeVariables(_variableSet, _component) {
 		let optimizedVariables = [];
-		for (let variable of result.variables)
+		let formulas = Object.assign([], _variableSet.formulas);
+		for (let variable of _variableSet.variables)
 		{
 			let formulaSet = variable.getFormulaSet(_component); 
 
@@ -193,27 +199,31 @@ function _Runner() {
 			}
 
 			optimizedVariables.push(variable);
+
+			variable.formula = false;
 			if (!isSubstitutable) continue;
 			variable.formula = formulaSet.formula;
 		}
-		result.variables = optimizedVariables;
+		// Substitue the result into the formulas
 		let baseVariables = [];
-
-		for (let i = 0; i < result.formulas.length; i++)
+		for (let i = 0; i < formulas.length; i++)
 		{
 			for (let variable of optimizedVariables)
 			{
 				if (!variable.formula) 
 				{
-					baseVariables.push(variable);
+					baseVariables = mergeArrays(baseVariables, [variable], (a, b) => a.nodeName == b.nodeName);
 					continue;
 				};
-				let parts = result.formulas[i].split("LOOP(" + variable.nodeName + ")");
-				result.formulas[i] = parts.join("(" + variable.formula + ")")
+				let parts = formulas[i].split("LOOP(" + variable.nodeName + ")");
+				formulas[i] = parts.join("(" + variable.formula + ")")
 			}
 		}
-		result.variables = baseVariables;
-		return result;
+		
+		return {
+			formulas: formulas,
+			variables: baseVariables
+		};
 	}
 
 	this.createFormulaForOutput = function(_output, _uniqueId, _originalOutput) {
@@ -279,7 +289,7 @@ function _Runner() {
 
 	function nodeDependantOn(_node, _dependantOnNode, _depth = 0) {
 		if (_node.parent.isWorldComponent) return false;
-		if (_depth > 10) return true;
+		if (_depth > 5) return true;
 		for (let line of _node.toLines)
 		{
 			if (line.from.id == _dependantOnNode.id) return true;
@@ -287,6 +297,18 @@ function _Runner() {
 		}
 		return false;
 	}
+
+
+
+
+
+
+
+
+
+
+
+
 
 	this.calcComponentOutput = function(_component = World.curComponent, _inputs) {
 		let formulas = this.createFormulas(_component);
@@ -494,4 +516,14 @@ function createBinaryString(nMask) {
        nFlag++, sMask += String(nShifted >>> 31), nShifted <<= 1);
   sMask=sMask.replace(/\B(?=(.{8})+(?!.))/g, " ") // added
   return sMask;
+}
+
+function mergeArrays(_a, _b, _compareFunc) {
+	let newArray = Object.assign([], _a);
+	for (let entry of _b)
+	{
+		if (newArray.findIndex((a) => _compareFunc(a, entry)) != -1) continue;
+		newArray.push(entry);
+	}
+	return newArray;
 }
