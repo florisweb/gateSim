@@ -77,12 +77,6 @@ function _Runner() {
 	}
 
 
-
-
-	async function wait(_length) {
-		return new Promise(function (resolve) {setTimeout(resolve, _length)});
-	}
-
 	this.calcTruthTable = function() {
 		if (internalVariables.length) return console.warn("A system with internal variable doesn't have a constant truth table.");
 		let outputs = [];
@@ -102,12 +96,23 @@ function _Runner() {
 	let modelUpToDate = false;
 	let formulas = [];
 	let internalVariables = [];
+	let internalPseudoVariables = [];
 	this.prepareRun = async function() {
+		let start = new Date();
 		let formulaSet = await this.createOptimizedFormulas(World.curComponent);
-		formulas = formulaSet.formulas;
-		internalVariables = formulaSet.variables;
+		formulas 			= formulaSet.formulas;
+		internalVariables 	= formulaSet.variables;
+
 		modelUpToDate = true;
-		// for (let variable of internalVariables) variable.getNode().turnedOn = false;
+		for (let variable of internalVariables) 
+		{
+			variable.getNode().turnedOn = false;
+			variable.prepare(false);
+		}
+		
+		internalPseudoVariables = getPseudoVariables(formulaSet);
+
+		console.log('Preparing took ' + (new Date() - start) + 'ms');
 	}
 
 	function clearUsedNodesArray(_component) {
@@ -120,15 +125,14 @@ function _Runner() {
 		}
 	}
 
-	this.getInfo = () => [formulas, internalVariables];
+	this.getInfo = () => [formulas, internalVariables, internalPseudoVariables];
 
-	let nand = (a, b) => !(a && b);
 	this.evaluateModel = function(_inputs) {
+		let start = new Date();
 		// Evaluate the internal variables from their respective pseudo variables
-		let pseudoVars = [];
 		for (let variable of internalVariables)
 		{
-			let curFormula = variable.getFormulaSet(World.curComponent, false).formula;
+			let curFormula = variable.preparedFormula;
 			for (let i = 0; i < _inputs.length; i++)
 			{
 				curFormula = curFormula.split("IN" + i).join(_inputs[i] ? 1 : 0);
@@ -146,24 +150,39 @@ function _Runner() {
 				
 				let node = World.curComponent.getNodeById(varName);
 				newFormula += node.turnedOn + suffix;
-
-				if (pseudoVars.find((_var) => _var.nodeName == varName)) continue;
-				pseudoVars.push(new Variable({nodeName: varName, component: World.curComponent}));
 			}
 			
 			variable.getNode().turnedOn = eval(newFormula);
 		}
 
 		// Update the pseudovariables
-		for (let pseudo of pseudoVars)
-		{
-			let formula = pseudo.getFormulaSet(World.curComponent, true).formula;
-			pseudo.getNode().turnedOn = evaluateFormula(formula, _inputs);
-		}
+		for (let pseudo of internalPseudoVariables) pseudo.getNode().turnedOn = evaluateFormula(pseudo.preparedFormula, _inputs);
 
 
 		// Evalute the actual system
-		return formulas.map((_formula) => evaluateFormula(_formula, _inputs));
+		let result = formulas.map((_formula) => evaluateFormula(_formula, _inputs));
+		console.warn('Evaluating took ' + (new Date() - start) + "ms");
+		return result;
+	}
+
+	function getPseudoVariables(_variableSet) {
+		let pseudoVars = [];
+		for (let variable of _variableSet.variables)
+		{
+			let parts = variable.preparedFormula.split("LOOP(");
+			for (let p = 1; p < parts.length; p++)
+			{
+				let endIndex = parts[p].split("").findIndex((a) => a == ")");
+				let varName = parts[p].substr(0, endIndex);
+				
+				if (pseudoVars.find((_var) => _var.nodeName == varName)) continue;
+				pseudoVars.push(new Variable({nodeName: varName, component: World.curComponent}));
+			}
+		}
+
+		// Update the pseudovariables
+		for (let pseudo of pseudoVars) pseudo.prepare(true);
+		return pseudoVars;
 	}
 
 	function evaluateFormula(_formula, _inputs) {
@@ -194,7 +213,7 @@ function _Runner() {
 			variables = mergeArrays(variables, result.variables, (a, b) => a.nodeName == b.nodeName);
 			out.push(result.formula);
 			console.warn("Finished calcing " + output.id, out.length / _component.outputs.length * 100 + "%");
-			await wait(10);
+			await wait(1);
 		}
 		return {
 			formulas: out,
@@ -256,6 +275,7 @@ function _Runner() {
 
 
 	this.createFormulaForOutput = function(_output, _allowedVariables = false, _originalOutput, _curPath = []) {
+		// console.log('create formula for output', _output);
 		if (!_originalOutput) _originalOutput = _output;
 		let newPath = Object.assign([], _curPath);
 		newPath.push(_output.id);
@@ -323,16 +343,16 @@ function _Runner() {
 	}
 
 
-	function nodeDependantOn(_node, _dependantOnNode, _depth = 0) {
-		if (_node.parent.isWorldComponent) return false;
-		if (_depth > 5) return true;
-		for (let line of _node.toLines)
-		{
-			if (line.from.id == _dependantOnNode.id) return true;
-			if (nodeDependantOn(line.from, _dependantOnNode, _depth + 1)) return true;
-		}
-		return false;
-	}
+	// function nodeDependantOn(_node, _dependantOnNode, _depth = 0) {
+	// 	if (_node.parent.isWorldComponent) return false;
+	// 	if (_depth > 5) return true;
+	// 	for (let line of _node.toLines)
+	// 	{
+	// 		if (line.from.id == _dependantOnNode.id) return true;
+	// 		if (nodeDependantOn(line.from, _dependantOnNode, _depth + 1)) return true;
+	// 	}
+	// 	return false;
+	// }
 
 
 
@@ -346,65 +366,65 @@ function _Runner() {
 
 
 
-	this.calcComponentOutput = function(_component = World.curComponent, _inputs) {
-		let formulas = this.createFormulas(_component);
-		let outputs = [];
-		let unknownVariables = [];
-		let trulyUnknownVariables = [];
+	// this.calcComponentOutput = function(_component = World.curComponent, _inputs) {
+	// 	let formulas = this.createFormulas(_component);
+	// 	let outputs = [];
+	// 	let unknownVariables = [];
+	// 	let trulyUnknownVariables = [];
 
-		for (let formula of formulas)
-		{
-			let curFormula = formula;
-			for (let i = 0; i < _inputs.length; i++)
-			{
-				curFormula = curFormula.split("IN" + i).join(_inputs[i]);
-			}
+	// 	for (let formula of formulas)
+	// 	{
+	// 		let curFormula = formula;
+	// 		for (let i = 0; i < _inputs.length; i++)
+	// 		{
+	// 			curFormula = curFormula.split("IN" + i).join(_inputs[i]);
+	// 		}
 
-			let variableParts = curFormula.split("LOOP(");
-			console.log(variableParts, curFormula);
-			let newFormula = variableParts[0];
-			for (let p = 1; p < variableParts.length; p++)
-			{
-				let endIndex = variableParts[p].split("").findIndex((a) => a == ")");
+	// 		let variableParts = curFormula.split("LOOP(");
+	// 		console.log(variableParts, curFormula);
+	// 		let newFormula = variableParts[0];
+	// 		for (let p = 1; p < variableParts.length; p++)
+	// 		{
+	// 			let endIndex = variableParts[p].split("").findIndex((a) => a == ")");
 
-				let varName = variableParts[p].substr(0, endIndex);
-				let suffix = variableParts[p].substr(endIndex + 1, variableParts[p].length);
+	// 			let varName = variableParts[p].substr(0, endIndex);
+	// 			let suffix = variableParts[p].substr(endIndex + 1, variableParts[p].length);
 
-				let exists = unknownVariables.find((v) => v.nodeName == varName);
-				let variable = exists
-				if (!exists) 
-				{
-					variable = new Variable({nodeName: varName, component: _component}, unknownVariables.length);
-					unknownVariables.push(variable);
-				}
+	// 			let exists = unknownVariables.find((v) => v.nodeName == varName);
+	// 			let variable = exists
+	// 			if (!exists) 
+	// 			{
+	// 				variable = new Variable({nodeName: varName, component: _component}, unknownVariables.length);
+	// 				unknownVariables.push(variable);
+	// 			}
 
-				newFormula += "" + variable.name + "" + suffix;
-			}
-			console.log("execute formula", newFormula);
+	// 			newFormula += "" + variable.name + "" + suffix;
+	// 		}
+	// 		console.log("execute formula", newFormula);
 				
-			outputs.push(eval(newFormula));
-		}
+	// 		outputs.push(eval(newFormula));
+	// 	}
 
-		console.log('quantum state', trulyUnknownVariables);
-		return outputs;
+	// 	console.log('quantum state', trulyUnknownVariables);
+	// 	return outputs;
 
-		function nand(a, b) {
-			if (typeof a != 'boolean') 
-			{
-				trulyUnknownVariables.push(unknownVariables[a]);
-				a = unknownVariables[a].getNode().turnedOn;
-			}
-			if (typeof b != 'boolean') 
-			{
-				trulyUnknownVariables.push(unknownVariables[b]);
-				b = unknownVariables[b].getNode().turnedOn;
-			}
+	// 	function nand(a, b) {
+	// 		if (typeof a != 'boolean') 
+	// 		{
+	// 			trulyUnknownVariables.push(unknownVariables[a]);
+	// 			a = unknownVariables[a].getNode().turnedOn;
+	// 		}
+	// 		if (typeof b != 'boolean') 
+	// 		{
+	// 			trulyUnknownVariables.push(unknownVariables[b]);
+	// 			b = unknownVariables[b].getNode().turnedOn;
+	// 		}
 
-			if (typeof a == 'boolean' && typeof b == 'boolean') return !(a && b);
-			console.log('came here somehow')
-			return false;
-		};
-	}
+	// 		if (typeof a == 'boolean' && typeof b == 'boolean') return !(a && b);
+	// 		console.log('came here somehow')
+	// 		return false;
+	// 	};
+	// }
 
 
 	function Variable({nodeName, component}, _index) {
@@ -423,6 +443,11 @@ function _Runner() {
 		this.getFormulaSet = function(_component, _userRequiredVars = false) {
 			let node = _component.getNodeById(this.nodeName);
 			return Runner.createFormulaForOutput(node, _userRequiredVars ? internalVariables.map((_var) => _var.nodeName) : false);
+		}
+
+		this.preparedFormula = false;
+		this.prepare = function(_userRequiredVars = false) {
+			this.preparedFormula = this.getFormulaSet(World.curComponent, _userRequiredVars).formula;
 		}
 	}
 }
@@ -563,3 +588,8 @@ function mergeArrays(_a, _b, _compareFunc) {
 	}
 	return newArray;
 }
+
+async function wait(_length) {
+	return new Promise(function (resolve) {setTimeout(resolve, _length)});
+}
+let nand = (a, b) => !(a && b);
