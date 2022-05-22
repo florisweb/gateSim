@@ -91,12 +91,23 @@ function _Runner() {
 
 	let formulas = [];
 	let internalVariables = [];
-	this.prepareRun = function() {
-		let formulaSet = this.createOptimizedFormulas(World.curComponent);
+	this.prepareRun = async function() {
+		let formulaSet = await this.createOptimizedFormulas(World.curComponent);
 		formulas = formulaSet.formulas;
 		internalVariables = formulaSet.variables;
 		for (let variable of internalVariables) variable.getNode().turnedOn = false;
 	}
+
+	function clearUsedNodesArray(_component) {
+		let nodes = [..._component.inputs, ..._component.outputs];
+		for (let node of nodes) node.usedToNodes = [];
+		for (let comp of _component.content)
+		{
+			if (comp.type == 'line') continue;
+			clearUsedNodesArray(comp);
+		}
+	}
+
 	this.getInfo = () => [formulas, internalVariables];
 
 	let nand = (a, b) => !(a && b);
@@ -162,15 +173,16 @@ function _Runner() {
 
 
 
-	this.createFormulas = function(_component = World.curComponent) {
+	this.createFormulas = async function(_component = World.curComponent) {
 		let out = [];
 		let variables = [];
 		for (let output of _component.outputs)
 		{
-			let uniqueId = newId();
-			let result = this.createFormulaForOutput(output, uniqueId);
+			let result = this.createFormulaForOutput(output);
 			variables = mergeArrays(variables, result.variables, (a, b) => a.nodeName == b.nodeName);
 			out.push(result.formula);
+			console.warn("Finished calcing " + output.id, out.length / _component.outputs.length * 100 + "%");
+			await wait(10);
 		}
 		return {
 			formulas: out,
@@ -178,22 +190,27 @@ function _Runner() {
 		}
 	}
 
-	this.createOptimizedFormulas = function(_component = World.curComponent) {
-		let result = this.createFormulas(...arguments);
+	this.createOptimizedFormulas = async function(_component = World.curComponent) {
+		let result = await this.createFormulas(...arguments);
 		return optimizeVariables(result, _component);
 	}
 
 	function optimizeVariables(_variableSet, _component) {
 		let optimizedVariables = [];
 		let formulas = Object.assign([], _variableSet.formulas);
+
 		for (let variable of _variableSet.variables)
 		{
 			let formulaSet = variable.getFormulaSet(_component); 
+			console.log('var', variable.nodeName, formulaSet);
 
 			let isSubstitutable = true;
 			for (let subVar of formulaSet.variables)
 			{
-				if (!optimizedVariables.find((_var) => _var.nodeName == subVar.nodeName)) continue;
+				if (
+					!optimizedVariables.find((_var) => _var.nodeName == subVar.nodeName) && 
+					_variableSet.variables.find((_var) => _var.nodeName == subVar.nodeName)
+				) continue;
 				isSubstitutable = false;
 				break;
 			}
@@ -226,23 +243,28 @@ function _Runner() {
 		};
 	}
 
-	this.createFormulaForOutput = function(_output, _uniqueId, _originalOutput) {
+
+
+	this.createFormulaForOutput = function(_output, _originalOutput, _curPath = []) {
 		if (!_originalOutput) _originalOutput = _output;
+		let newPath = Object.assign([], _curPath);
+		newPath.push(_output.id);
+
 		let variables = [];
 		let out = "";
 		for (let lineTo of _output.toLines)
 		{
 			let parent = lineTo.from.parent;
-			if (lineTo.from.formulaId == _uniqueId && nodeDependantOn(lineTo.from, _output) && lineTo.from.id != _originalOutput.id) // a node can't be dependant on itself
-			{
+			if (
+				newPath.includes(lineTo.from.id) &&
+				lineTo.from.id != _originalOutput.id
+			) {
 				out = "LOOP(" + lineTo.from.id + ") || ";
-
 				let variable = new Variable({nodeName: lineTo.from.id, component: lineTo.parent}, variables.length);
 				variables.push(variable);
 				continue;
 			}
 
-			lineTo.from.formulaId = _uniqueId;
 
 			if (parent.isWorldComponent) 
 			{
@@ -253,15 +275,15 @@ function _Runner() {
 			if (out) out += " || ";
 			if (parent.componentId == NandGateComponentId)
 			{
-				let resultA = this.createFormulaForOutput(parent.inputs[0], _uniqueId, _originalOutput);
-				let resultB = this.createFormulaForOutput(parent.inputs[1], _uniqueId, _originalOutput);
+				let resultA = this.createFormulaForOutput(parent.inputs[0], _originalOutput, newPath);
+				let resultB = this.createFormulaForOutput(parent.inputs[1], _originalOutput, newPath);
 				variables = variables.concat(resultA.variables).concat(resultB.variables);
 				out += "nand(" + resultA.formula + ", " + resultB.formula + ")";
 				continue;
 			}
 
 			
-			let result = this.createFormulaForOutput(lineTo.from, _uniqueId, _originalOutput);
+			let result = this.createFormulaForOutput(lineTo.from, _originalOutput, newPath);
 			variables = variables.concat(result.variables);
 			out += result.formula;
 		}
@@ -386,7 +408,7 @@ function _Runner() {
 
 		this.getFormulaSet = function(_component) {
 			let node = _component.getNodeById(this.nodeName);
-			return Runner.createFormulaForOutput(node, newId());
+			return Runner.createFormulaForOutput(node);
 		}
 	}
 }
