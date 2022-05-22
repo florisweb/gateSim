@@ -453,8 +453,6 @@ function WorldInput({name, turnedOn}, _parent, _index) {
 		this.onclick = function() {
 			This.setStatus(!This.turnedOn);
 			
-			// if (Runner.activated) return Runner.runTree.run();
-			// This.run();
 			Runner.run();
 		}
 		

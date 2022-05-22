@@ -29,7 +29,7 @@ function _Builder() {
     World.import(_component);
     curEditComponent = _component
     HTML.nameHolder.value = _component.name;
-    Runner.run(true);
+    Runner.run();
   }
 
   this.newChip = function(_inputs = 2, _outputs = 1) {
@@ -141,8 +141,9 @@ function _Builder() {
           World.curComponent.addComponent(this.curBuildLines[i]);
         }
         
-        // if (Runner.activated) Runner.reEvaluate();
-        Runner.run(true)
+        Runner.modelNeedsUpdate();
+        Runner.run();
+        
         this.curBuildLines = [];
         return;
       }

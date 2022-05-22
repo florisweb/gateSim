@@ -3,68 +3,79 @@
 function _Runner() {
 	let This = this;
 	this.activated = false;
-	this.runSpeed = 100;
-	this.autoRun = false;
-	this.instantMode = false;
+	// this.runSpeed = 100;
+	// this.autoRun = false;
+	// this.instantMode = false;
 
-	let resolver;
-	let curPromise;
-	this.nextStep = function() {
-		resolver();
-	}
-	this.awaitNextStep = async function() {
-		if (Runner.instantMode) return;
-		if (curPromise) await curPromise;
-		curPromise = new Promise((resolve) => {
-			resolver = resolve;
-			if (!Runner.autoRun) return;
-			setTimeout(() => {
-				resolve();
-			}, Runner.runSpeed)
-		})
-		return curPromise;
-	}
+	// let resolver;
+	// let curPromise;
+	// this.nextStep = function() {
+	// 	resolver();
+	// }
+	// this.awaitNextStep = async function() {
+	// 	if (Runner.instantMode) return;
+	// 	if (curPromise) await curPromise;
+	// 	curPromise = new Promise((resolve) => {
+	// 		resolver = resolve;
+	// 		if (!Runner.autoRun) return;
+	// 		setTimeout(() => {
+	// 			resolve();
+	// 		}, Runner.runSpeed)
+	// 	})
+	// 	return curPromise;
+	// }
 
 
 
-	this.loopCue = [];
-	this.addLoopedNode = function(_node) {
-		if (this.loopCue.find((node) => _node.id == _node.id)) return;
-		this.loopCue.push(_node);
-	}
+	// this.loopCue = [];
+	// this.addLoopedNode = function(_node) {
+	// 	if (this.loopCue.find((node) => _node.id == _node.id)) return;
+	// 	this.loopCue.push(_node);
+	// }
 
-	this.curRunId;
-	let internalCurRunId;
-	this.run = async function(_fullRun = false) {
-		this.loopCue = [];
-		let runId = newId();
-		console.warn('run', runId);
-		this.curRunId = runId;
-		internalCurRunId = runId;
+	// this.curRunId;
+	// let internalCurRunId;
+	// this.run = async function(_fullRun = false) {
+	// 	this.loopCue = [];
+	// 	let runId = newId();
+	// 	console.warn('run', runId);
+	// 	this.curRunId = runId;
+	// 	internalCurRunId = runId;
 
-		for (let input of World.curComponent.inputs)
-	    {
-	    	input.run(runId, _fullRun);
-	    }
+	// 	for (let input of World.curComponent.inputs)
+	//     {
+	//     	input.run(runId, _fullRun);
+	//     }
 	    
-	    let subLoop = 0;
-	    while (this.loopCue.length > 0 && internalCurRunId == runId)
-	    {
-	    	subLoop++;
-	    	await wait(this.runSpeed);
-	    	this.runLoopCue(subLoop, false); // Never run as _fullRun, because it will get stuck in a loop this way
-	    }
+	//     let subLoop = 0;
+	//     while (this.loopCue.length > 0 && internalCurRunId == runId)
+	//     {
+	//     	subLoop++;
+	//     	await wait(this.runSpeed);
+	//     	this.runLoopCue(subLoop, false); // Never run as _fullRun, because it will get stuck in a loop this way
+	//     }
+	// }
+	// this.runLoopCue = function(_subLoop, _fullRun) {
+	// 	this.curRunId = newId();
+	// 	let newCue = Object.assign([], this.loopCue);
+	// 	this.loopCue = [];
+	// 	console.log('run loopCue', _subLoop, newCue);
+	// 	for (let node of newCue)
+	//     {
+	//     	node.run(0, this.curRunId, _fullRun);
+	//     }
+	// }
+
+
+
+	this.modelNeedsUpdate = function() {modelUpToDate = false}
+
+	this.run = async function() {
+		if (!modelUpToDate) await this.prepareRun();
+		let result = this.evaluateModel(World.curComponent.inputs.map((_inp) => _inp.turnedOn));
+		for (let i = 0; i < result.length; i++) World.curComponent.outputs[i].turnedOn = result[i];
 	}
-	this.runLoopCue = function(_subLoop, _fullRun) {
-		this.curRunId = newId();
-		let newCue = Object.assign([], this.loopCue);
-		this.loopCue = [];
-		console.log('run loopCue', _subLoop, newCue);
-		for (let node of newCue)
-	    {
-	    	node.run(0, this.curRunId, _fullRun);
-	    }
-	}
+
 
 
 
@@ -88,14 +99,15 @@ function _Runner() {
 
 
 
-
+	let modelUpToDate = false;
 	let formulas = [];
 	let internalVariables = [];
 	this.prepareRun = async function() {
 		let formulaSet = await this.createOptimizedFormulas(World.curComponent);
 		formulas = formulaSet.formulas;
 		internalVariables = formulaSet.variables;
-		for (let variable of internalVariables) variable.getNode().turnedOn = false;
+		modelUpToDate = true;
+		// for (let variable of internalVariables) variable.getNode().turnedOn = false;
 	}
 
 	function clearUsedNodesArray(_component) {
@@ -112,11 +124,11 @@ function _Runner() {
 
 	let nand = (a, b) => !(a && b);
 	this.evaluateModel = function(_inputs) {
-		// Evaluate the internal variables
+		// Evaluate the internal variables from their respective pseudo variables
 		let pseudoVars = [];
 		for (let variable of internalVariables)
 		{
-			let curFormula = variable.getFormulaSet(World.curComponent).formula;
+			let curFormula = variable.getFormulaSet(World.curComponent, false).formula;
 			for (let i = 0; i < _inputs.length; i++)
 			{
 				curFormula = curFormula.split("IN" + i).join(_inputs[i] ? 1 : 0);
@@ -135,7 +147,6 @@ function _Runner() {
 				let node = World.curComponent.getNodeById(varName);
 				newFormula += node.turnedOn + suffix;
 
-
 				if (pseudoVars.find((_var) => _var.nodeName == varName)) continue;
 				pseudoVars.push(new Variable({nodeName: varName, component: World.curComponent}));
 			}
@@ -143,9 +154,11 @@ function _Runner() {
 			variable.getNode().turnedOn = eval(newFormula);
 		}
 
+		// Update the pseudovariables
 		for (let pseudo of pseudoVars)
 		{
-			pseudo.getNode().turnedOn = evaluateFormula(pseudo.getFormulaSet(World.curComponent).formula, _inputs);
+			let formula = pseudo.getFormulaSet(World.curComponent, true).formula;
+			pseudo.getNode().turnedOn = evaluateFormula(formula, _inputs);
 		}
 
 
@@ -165,7 +178,6 @@ function _Runner() {
 			let state = variable.getNodeState();
 			curFormula = curFormula.split("LOOP(" + variable.nodeName + ")").join(state ? 1 : 0);
 		}
-			
 		return eval(curFormula);
 	}
 
@@ -202,8 +214,6 @@ function _Runner() {
 		for (let variable of _variableSet.variables)
 		{
 			let formulaSet = variable.getFormulaSet(_component); 
-			console.log('var', variable.nodeName, formulaSet);
-
 			let isSubstitutable = true;
 			for (let subVar of formulaSet.variables)
 			{
@@ -245,7 +255,7 @@ function _Runner() {
 
 
 
-	this.createFormulaForOutput = function(_output, _originalOutput, _curPath = []) {
+	this.createFormulaForOutput = function(_output, _allowedVariables = false, _originalOutput, _curPath = []) {
 		if (!_originalOutput) _originalOutput = _output;
 		let newPath = Object.assign([], _curPath);
 		newPath.push(_output.id);
@@ -259,10 +269,14 @@ function _Runner() {
 				newPath.includes(lineTo.from.id) &&
 				lineTo.from.id != _originalOutput.id
 			) {
-				out = "LOOP(" + lineTo.from.id + ") || ";
-				let variable = new Variable({nodeName: lineTo.from.id, component: lineTo.parent}, variables.length);
-				variables.push(variable);
-				continue;
+				if (typeof _allowedVariables != 'object' || _allowedVariables.includes(lineTo.from.id))
+				{
+					out = "LOOP(" + lineTo.from.id + ") || ";
+					let variable = new Variable({nodeName: lineTo.from.id, component: lineTo.parent}, variables.length);
+					variables.push(variable);
+					continue;
+				} 
+				// else console.warn("Tried to use a not allowed variable", lineTo.from.id, 'of', _allowedVariables, _originalOutput.id);
 			}
 
 
@@ -275,15 +289,15 @@ function _Runner() {
 			if (out) out += " || ";
 			if (parent.componentId == NandGateComponentId)
 			{
-				let resultA = this.createFormulaForOutput(parent.inputs[0], _originalOutput, newPath);
-				let resultB = this.createFormulaForOutput(parent.inputs[1], _originalOutput, newPath);
+				let resultA = this.createFormulaForOutput(parent.inputs[0], _allowedVariables, _originalOutput, newPath);
+				let resultB = this.createFormulaForOutput(parent.inputs[1], _allowedVariables, _originalOutput, newPath);
 				variables = variables.concat(resultA.variables).concat(resultB.variables);
 				out += "nand(" + resultA.formula + ", " + resultB.formula + ")";
 				continue;
 			}
 
 			
-			let result = this.createFormulaForOutput(lineTo.from, _originalOutput, newPath);
+			let result = this.createFormulaForOutput(lineTo.from, _allowedVariables, _originalOutput, newPath);
 			variables = variables.concat(result.variables);
 			out += result.formula;
 		}
@@ -406,9 +420,9 @@ function _Runner() {
 
 		this.merge = function(_var) {}
 
-		this.getFormulaSet = function(_component) {
+		this.getFormulaSet = function(_component, _userRequiredVars = false) {
 			let node = _component.getNodeById(this.nodeName);
-			return Runner.createFormulaForOutput(node);
+			return Runner.createFormulaForOutput(node, _userRequiredVars ? internalVariables.map((_var) => _var.nodeName) : false);
 		}
 	}
 }
